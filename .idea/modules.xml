@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Gpiolibrary/Gpiolibrary.iml" filepath="$PROJECT_DIR$/Gpiolibrary/Gpiolibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SkwMes.iml" filepath="$PROJECT_DIR$/SkwMes.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+    </modules>
+  </component>
+</project>

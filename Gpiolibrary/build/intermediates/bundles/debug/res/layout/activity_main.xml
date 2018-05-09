@@ -1,0 +1,141 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+<!-- 
+        
+         <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+"
+
+            <TextView
+                android:id="@+id/rssssadf"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="B..:" />
+
+            <EditText
+                android:id="@+id/edBB"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:text="B" >
+
+                <requestFocus />
+            </EditText>
+        </LinearLayout> -->
+                <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="40px"
+            android:layout_marginLeft="280dp"
+            android:text="JLD_GPIO测试Demo系统 V4.0" />
+        
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+"
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                
+                android:text="IO编号1,2,3...:" />
+
+            <EditText
+                android:id="@+id/edNumInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:text="1" >
+
+                <requestFocus />
+            </EditText>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            
+            <TextView
+                android:id="@+id/ym"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="勾上为高电平，仅对输出有效" />
+            
+            <CheckBox
+                android:id="@+id/cbIsHigh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="高或低" />
+        </LinearLayout>
+
+         <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+                    android:orientation="horizontal" >
+
+             <Button
+                 android:id="@+id/btnInput"
+                 android:layout_width="140dp"
+                 android:layout_height="wrap_content"
+                 android:textSize="22px"
+                 android:text="配置成输入" />
+             
+              <Button
+                  android:id="@+id/btnOutput"
+                  android:layout_width="140dp"
+                  android:layout_height="wrap_content"
+                  android:textSize="22px"
+                  android:text="配置成输出" />
+              
+              <Button
+                  android:id="@+id/btnVal"
+                  android:layout_width="140dp"
+                  android:layout_height="wrap_content"
+                  android:textSize="22px"
+                  android:text="获取IO值" />
+
+        </LinearLayout>
+        
+          <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+                    android:orientation="horizontal" >
+
+          
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="39dp" />
+        
+
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

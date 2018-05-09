@@ -1,0 +1,42 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!-- 自定义样式的name属性用于引用，父亲是默认的style -->
+    <style name="InitProgressBar" parent="@android:style/Widget.ProgressBar.Horizontal">
+        <!-- 最大高度50dp，最小高度10dp，进度值确定，Drawable样式文件引用 -->
+        <item name="android:maxHeight">50dp</item>
+        <item name="android:minHeight">10dp</item>
+        <item name="android:indeterminateOnly">false</item>
+        <item name="android:indeterminateDrawable">@android:drawable/progress_indeterminate_horizontal</item>
+        <item name="android:progressDrawable">@drawable/init_progressbar</item>
+    </style>
+    <style name="Theme.DialogActivity" parent="Theme.AppCompat.Dialog">
+        <item name="windowNoTitle">true</item>//对话框无标题
+        <item name="android:windowIsTranslucent">true</item>//此对话框的背景
+        <item name="android:windowBackground">@android:color/transparent</item>//对话框是否透明
+        <item name="android:windowContentOverlay">@null</item>//对话框是否有遮盖
+        <item name="android:windowIsFloating">true</item> //对话框是否浮动
+        <item name="android:backgroundDimEnabled">true</item>//是否允许对话框的背景变暗
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+    </style>
+    <!--Theme.AppCompat.NoActionBar 不要引用，会导致布局内所有的东西都会变成白色（或者透明），例如TextView的background，textColor等-->
+    <style name="AppCompat.FullScreenTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+    <style name="MyDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
+        <item name="android:windowIsTranslucent">false</item><!--半透明-->
+        <item name="android:windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowBackground">@color/transparent</item><!--背景透明-->
+        <item name="android:backgroundDimEnabled">false</item><!-- 模糊 -->
+    </style>
+</resources>

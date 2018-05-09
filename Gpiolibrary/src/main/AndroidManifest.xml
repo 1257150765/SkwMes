@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.gaodi"
+    >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="17" />
+
+    <application
+        android:allowBackup="true"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.glongtech.activity.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <!-- 将app设置成Luncher
+                <category android:name="android.intent.category.HOME" />
+				<category android:name="android.intent.category.DEFAULT" />
+                -->
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

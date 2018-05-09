@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+    <TextView
+        android:textColor="@color/white"
+        android:background="@color/blue"
+        android:gravity="center"
+        android:text="请选择"
+        android:textSize="@dimen/normalTextSize"
+        android:layout_width="match_parent"
+        android:layout_height="80dp" />
+    <LinearLayout
+        android:background="@drawable/border_shape"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+        <TextView
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:textSize="@dimen/bigTextSize"
+            android:text="系统名称："
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+        <TextView
+            android:background="@android:color/darker_gray"
+            android:layout_width="1px"
+            android:layout_height="match_parent" />
+        <Spinner
+            android:gravity="center"
+            android:id="@+id/sp_syb_dialog_select"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="100dp"/>
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:background="@drawable/border_shape"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+        <TextView
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:textSize="@dimen/bigTextSize"
+            android:text="线体："
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+        <TextView
+            android:background="@android:color/darker_gray"
+            android:layout_width="1px"
+            android:layout_height="match_parent" />
+        <Spinner
+            android:gravity="center"
+            android:id="@+id/sp_xt_dialog_select"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="100dp"/>
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:background="@drawable/border_shape"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+        <TextView
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:textSize="@dimen/bigTextSize"
+            android:text="工站："
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+        <TextView
+            android:background="@android:color/darker_gray"
+            android:layout_width="1px"
+            android:layout_height="match_parent" />
+        <Spinner
+            android:gravity="center"
+            android:id="@+id/sp_gz_dialog_select"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="100dp"/>
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="80dp">
+        <TextView
+            android:id="@+id/tv_exit_dialog_select"
+            android:textColor="@color/white"
+            android:background="@color/red"
+            android:gravity="center"
+            android:text="取消"
+            android:textSize="@dimen/normalTextSize"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+        <TextView
+            android:id="@+id/tv_ok_dialog_select"
+            android:textColor="@color/white"
+            android:background="@color/blue"
+            android:gravity="center"
+            android:text="确定"
+            android:textSize="@dimen/normalTextSize"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+
+</LinearLayout>
