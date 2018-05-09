@@ -87,19 +87,10 @@
              android:textSize="@dimen/normalTextSize" />
 
          <TextView
-             android:textColor="@color/black"
-             android:id="@+id/tv_gz_mainactivity"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:layout_marginTop="10dp"
-             android:gravity="center"
-             android:text="工\t\t\t\t\t\t站:SMT01"
-             android:textSize="@dimen/normalTextSize" />
-         <TextView
              android:layout_width="340dp"
              android:layout_height="1px"
              android:layout_gravity="center_horizontal"
-             android:layout_marginTop="63dp"
+             android:layout_marginTop="93dp"
              android:background="@color/gray" />
          <LinearLayout
              android:layout_marginTop="50dp"
@@ -110,49 +101,35 @@
             <Button
                 android:textColor="@color/white"
                 android:gravity="center"
-                android:id="@+id/btn_road1_mainactivity"
+                android:id="@+id/btn_xtqh_mainactivity"
                 android:background="@drawable/circlecrop_shape_green"
                 android:textSize="@dimen/normalTextSize"
-                android:text="启动一轨"
+                android:text="系统切换"
                 android:layout_width="match_parent"
                 android:layout_height="60dp" />
             <Button
                 android:layout_marginTop="30dp"
                 android:textColor="@color/white"
                 android:gravity="center"
-                android:id="@+id/btn_road2_mainactivity"
+                android:id="@+id/btn_roadsetting_mainactivity"
                 android:background="@drawable/circlecrop_shape_green"
                 android:textSize="@dimen/normalTextSize"
-                android:text="启动二轨"
+                android:text="轨道设置"
                 android:layout_width="match_parent"
                 android:layout_height="60dp" />
-         </LinearLayout>
-         <RelativeLayout
-             android:layout_gravity="center_horizontal"
-             android:layout_marginTop="30dp"
-             android:layout_width="250dp"
-             android:layout_height="wrap_content">
             <Button
-                android:layout_alignParentLeft="true"
-                android:textColor="@color/white"
-                android:gravity="center"
-                android:id="@+id/btn_xtqh_mainactivity"
-                android:background="@drawable/circlecrop_shape_red"
-                android:textSize="16sp"
-                android:text="系统切换"
-                android:layout_width="100dp"
-                android:layout_height="50dp" />
-            <Button
-                android:layout_alignParentRight="true"
+                android:layout_marginTop="30dp"
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:id="@+id/btn_changepwd_mainactivity"
                 android:background="@drawable/circlecrop_shape_red"
-                android:textSize="16sp"
+                android:textSize="@dimen/normalTextSize"
                 android:text="修改密码"
-                android:layout_width="100dp"
-                android:layout_height="50dp" />
-         </RelativeLayout>
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                 />
+         </LinearLayout>
+
          <LinearLayout
              android:layout_marginTop="30dp"
              android:layout_gravity="center_horizontal"
@@ -246,16 +223,31 @@
                       android:layout_width="50dp"
                       android:layout_height="50dp" />
                </LinearLayout>
-               <!--<TextView
-                   android:id="@+id/tv_runstatu1_mainactivity"
-                   android:gravity="center_vertical"
-                   android:textSize="@dimen/normalTextSize"
-                   android:background="@drawable/border_shape"
-                   android:layout_width="0dp"
-                   android:layout_weight="5"
-                   android:layout_height="match_parent"
-                    />-->
             </LinearLayout>
+            <LinearLayout
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+               <TextView
+                   android:id="@+id/tv_road1_setting_mainactivity"
+                   android:textColor="#3276B4"
+                   android:gravity="start"
+                   android:textSize="16sp"
+                   android:text="一轨工作模式:手工放行"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content" />
+               <TextView
+                   android:layout_marginLeft="20dp"
+                   android:id="@+id/tv_road1_gz_mainactivity"
+                   android:textColor="#3276B4"
+                   android:gravity="start"
+                   android:textSize="16sp"
+                   android:text="工站信息:GP01"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content" />
+            </LinearLayout>
+
          </LinearLayout>
 
          <!--网络状态-->
@@ -379,6 +371,29 @@
                 android:layout_weight="5"
                 android:layout_height="match_parent"
                  />-->
+         </LinearLayout>
+         <LinearLayout
+             android:gravity="center_vertical"
+             android:orientation="horizontal"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/tv_road2_setting_mainactivity"
+                android:textColor="#3276B4"
+                android:gravity="start"
+                android:textSize="16sp"
+                android:text="一轨工作模式:手工放行"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_marginLeft="20dp"
+                android:id="@+id/tv_road2_gz_mainactivity"
+                android:textColor="#3276B4"
+                android:gravity="center_vertical"
+                android:textSize="16sp"
+                android:text="工站信息:GP01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
          </LinearLayout>
       </LinearLayout>
 

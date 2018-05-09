@@ -92,7 +92,7 @@
 
         <Button
             android:id="@+id/btn_cancle_changegpioactivity"
-            android:layout_marginLeft="1dp"
+
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -101,6 +101,7 @@
             android:textSize="20dp"
             android:textColor="@android:color/white"/>
         <Button
+            android:layout_marginLeft="1dp"
             android:id="@+id/btn_ok_changegpioactivity"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

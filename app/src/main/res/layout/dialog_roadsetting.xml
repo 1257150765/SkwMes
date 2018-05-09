@@ -3,7 +3,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    android:layout_width="1100dp"
     android:layout_height="match_parent"
     android:background="@color/white"
     android:orientation="vertical"
@@ -13,7 +13,7 @@
         android:textColor="@color/white"
         android:background="@color/blue"
         android:gravity="center"
-        android:text="请选择"
+        android:text="轨道设置"
         android:textSize="@dimen/normalTextSize"
         android:layout_width="match_parent"
         android:layout_height="80dp" />
@@ -26,7 +26,7 @@
             android:textColor="@color/black"
             android:gravity="center"
             android:textSize="@dimen/bigTextSize"
-            android:text="系统名称："
+            android:text="一轨工作模式："
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent" />
@@ -36,7 +36,7 @@
             android:layout_height="match_parent" />
         <Spinner
             android:gravity="center"
-            android:id="@+id/sp_syb_dialog_select"
+            android:id="@+id/sp_road1_gzms_dialog_roadsetting"
             android:layout_weight="2"
             android:layout_width="0dp"
             android:layout_height="100dp"/>
@@ -52,7 +52,7 @@
             android:textColor="@color/black"
             android:gravity="center"
             android:textSize="@dimen/bigTextSize"
-            android:text="线体："
+            android:text="二轨工作模式："
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent" />
@@ -62,71 +62,19 @@
             android:layout_height="match_parent" />
         <Spinner
             android:gravity="center"
-            android:id="@+id/sp_xt_dialog_select"
+            android:id="@+id/sp_road2_gzms_dialog_roadsetting"
             android:layout_weight="2"
             android:layout_width="0dp"
             android:layout_height="100dp"/>
 
-
     </LinearLayout>
-    <LinearLayout
-        android:background="@drawable/border_shape"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="100dp">
-        <TextView
-            android:textColor="@color/black"
-            android:gravity="center"
-            android:textSize="@dimen/bigTextSize"
-            android:text="一轨工站："
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:background="@android:color/darker_gray"
-            android:layout_width="1px"
-            android:layout_height="match_parent" />
-        <Spinner
-            android:gravity="center"
-            android:id="@+id/sp_road1_gz_dialog_select"
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:layout_height="100dp"/>
 
-
-    </LinearLayout>
-    <LinearLayout
-        android:background="@drawable/border_shape"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="100dp">
-        <TextView
-            android:textColor="@color/black"
-            android:gravity="center"
-            android:textSize="@dimen/bigTextSize"
-            android:text="二轨工站："
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:background="@android:color/darker_gray"
-            android:layout_width="1px"
-            android:layout_height="match_parent" />
-        <Spinner
-            android:gravity="center"
-            android:id="@+id/sp_road2_gz_dialog_select"
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:layout_height="100dp"/>
-
-
-    </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="80dp">
         <TextView
-            android:id="@+id/tv_exit_dialog_select"
+            android:id="@+id/tv_exit_dialog_roadsetting"
             android:textColor="@color/white"
             android:background="@color/red"
             android:gravity="center"
@@ -136,7 +84,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent" />
         <TextView
-            android:id="@+id/tv_ok_dialog_select"
+            android:id="@+id/tv_ok_dialog_roadsetting"
             android:textColor="@color/white"
             android:background="@color/blue"
             android:gravity="center"

@@ -1,7 +1,10 @@
 package com.ruiduoyi.skwmes.net;
 
+import com.ruiduoyi.skwmes.bean.GzBean;
 import com.ruiduoyi.skwmes.bean.StopOrder;
+import com.ruiduoyi.skwmes.bean.SystemBean;
 import com.ruiduoyi.skwmes.bean.UpdateBean;
+import com.ruiduoyi.skwmes.bean.XbBean;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,6 +17,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 import static com.ruiduoyi.skwmes.Config.BASE_URL;
 
@@ -54,12 +58,31 @@ public class RetrofitManager {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
-
-
+    public static Observable<SystemBean> getSystemName(){
+        return retrofit.create(Api.class).getSystemName()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+    public static Observable<XbBean> getXbBean(String fcServer, String fcDataBase,String fcUid,String fcPwd){
+        return retrofit.create(Api.class).getXbBean(fcServer,fcDataBase,fcUid,fcPwd)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+    public static Observable<GzBean> getGzBean(String fcServer, String fcDataBase,String fcUid,String fcPwd){
+        return retrofit.create(Api.class).getGzBean(fcServer,fcDataBase,fcUid,fcPwd)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
     interface Api{
         @GET("GetStopOrder")
         Observable<StopOrder> getStopOrder();
         @GET("GetUpdateInfo")
         Observable<UpdateBean> getUpdateInfo();
+        @GET("GetPrjList")
+        Observable<SystemBean> getSystemName();
+        @GET("GetXbmList")
+        Observable<XbBean> getXbBean(@Query("fcServer") String fcServer,@Query("fcDataBase") String fcDataBase,@Query("fcUid") String fcUid,@Query("fcPwd") String fcPwd);
+        @GET("GetOprList")
+        Observable<GzBean> getGzBean(@Query("fcServer") String fcServer, @Query("fcDataBase") String fcDataBase, @Query("fcUid") String fcUid, @Query("fcPwd") String fcPwd);
     }
 }

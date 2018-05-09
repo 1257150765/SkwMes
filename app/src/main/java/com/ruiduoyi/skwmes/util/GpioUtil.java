@@ -22,7 +22,7 @@ public class GpioUtil{
     public static final String GPIO_TYPE_LOW= "0";
 
 
-    public GpioUtil(String gpioIndex, final long delay, final OnGpioChangeListener onGpioChangeListener) {
+    public GpioUtil(String gpioIndex, final OnGpioChangeListener onGpioChangeListener) {
         setGpioIndex(gpioIndex);
         //1 -> 高电平    0 -> 低电平
         if (Gpio.GetGpioValue(gpioIndex) == 1){
