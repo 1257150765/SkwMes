@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import com.ruiduoyi.skwmes.Config;
 import com.ruiduoyi.skwmes.R;
+import com.ruiduoyi.skwmes.bean.GzBean;
+import com.ruiduoyi.skwmes.util.PreferencesUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,10 @@ public class RoadSettingDialog extends AlertDialog {
     TextView tvExit;
     @BindView(R.id.tv_ok_dialog_roadsetting)
     TextView tvOk;
-
+    @BindView(R.id.sp_road1_gz_dialog_roadsetting)
+    Spinner spGz1;
+    @BindView(R.id.sp_road2_gz_dialog_roadsetting)
+    Spinner spGz2;
     private Context context;
     private View mRootView;
     private String road1GzmsStr = "";
@@ -43,7 +48,11 @@ public class RoadSettingDialog extends AlertDialog {
     private String road1GzxxStr = "";
     private String road2GzxxStr = "";
     private RoadSettingListener roadSettingListener;
-
+    private ArrayAdapter<String> gzAdapter;
+    private List<GzBean.UcDataBean> gzData;
+    private GzBean.UcDataBean gzBean1 = null;
+    private GzBean.UcDataBean gzBean2 = null;
+    private PreferencesUtil preferencesUtil;
 
     public void setRoadSettingListener(RoadSettingListener roadSettingListener) {
         this.roadSettingListener = roadSettingListener;
@@ -56,7 +65,7 @@ public class RoadSettingDialog extends AlertDialog {
     protected RoadSettingDialog(@NonNull Context context, int themeResId) {
         super(context, themeResId);
         this.context = context;
-
+        preferencesUtil = new PreferencesUtil(context);
         if (context instanceof Activity) {
             setOwnerActivity((Activity) context);
         }
@@ -95,13 +104,28 @@ public class RoadSettingDialog extends AlertDialog {
             }
         });
         //工站信息
-        final List<String> gzxxData = new ArrayList<>();
-        gzxxData.add("OP1");
-        gzxxData.add("OP2");
-        gzxxData.add("OP3");
-        gzxxData.add("OP4");
-        ArrayAdapter gzxxAdapter = new ArrayAdapter(context, R.layout.item_select_dialog, gzxxData);
+        spGz1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                gzBean1 = gzData.get(position);
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        spGz2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                gzBean2 = gzData.get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     @OnClick({R.id.tv_exit_dialog_roadsetting, R.id.tv_ok_dialog_roadsetting})
@@ -112,14 +136,38 @@ public class RoadSettingDialog extends AlertDialog {
                 break;
             case R.id.tv_ok_dialog_roadsetting:
                 if (null != roadSettingListener){
-                    roadSettingListener.onRoadSetting(road1GzmsStr,road2GzmsStr);
+                    preferencesUtil.setSybXtGz(null,null,gzBean1,gzBean2);
+                    roadSettingListener.onRoadSetting(road1GzmsStr,road2GzmsStr,gzBean1,gzBean2);
                 }
                 dismiss();
                 break;
         }
     }
 
+    /**
+     * 设置工站
+     *
+     * @param gzData
+     */
+    public void setGzData(List<GzBean.UcDataBean> gzData) {
+        //一轨工站
+        this.gzData = gzData;
+        List<String> data = new ArrayList<>();
+        for (GzBean.UcDataBean bean: gzData){
+            data.add(bean.getV_gzdm()+" "+bean.getV_gzname());
+        }
+        gzAdapter = new ArrayAdapter<String>(context, R.layout.item_select_dialog, data);
+        spGz1.setAdapter(gzAdapter);
+        spGz1.setSelection(0);
+        gzAdapter.notifyDataSetChanged();
+        //二轨工站
+
+        spGz2.setAdapter(gzAdapter);
+        spGz2.setSelection(0);
+        gzAdapter.notifyDataSetChanged();
+    }
+
     public interface RoadSettingListener {
-        void onRoadSetting(String road1GzmsStr, String road2GzmsStr);
+        void onRoadSetting(String road1GzmsStr, String road2GzmsStr, GzBean.UcDataBean road1GzxxStr, GzBean.UcDataBean road2GzxxStr);
     }
 }

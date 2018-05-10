@@ -45,23 +45,28 @@ public class PreferencesUtil {
         return preferences.getString(PWD, "");
     }
 
-    public void setSybXtGz(SystemBean.UcDataBean sybStr, XbBean.UcDataBean xbBean, GzBean.UcDataBean gzBean1, GzBean.UcDataBean gzBean2) {
+    public void setSybXtGz(SystemBean.UcDataBean systemBean, XbBean.UcDataBean xbBean, GzBean.UcDataBean gzBean1, GzBean.UcDataBean gzBean2) {
         SharedPreferences preferences = context.getSharedPreferences("data", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(SYB_NAME, sybStr.getPrj_name());
-        editor.putString(SYB_SERVER, sybStr.getPrj_server());
-        editor.putString(SYB_DATABASE, sybStr.getPrj_database());
-        editor.putString(SYB_UID, sybStr.getPrj_uid());
-        editor.putString(SYB_PWD, sybStr.getPrj_pwd());
-
-        editor.putString(XT_NAME, xbBean.getV_xbname());
-        editor.putString(XT_CODE, xbBean.getV_xbdm());
-
-        editor.putString(GZ_Code_3, gzBean1.getV_gzdm());
-        editor.putString(GZ_NAME_3, gzBean1.getV_gzname());
-        editor.putString(GZ_Code_4, gzBean2.getV_gzdm());
-        editor.putString(GZ_NAME_4, gzBean2.getV_gzname());
-
+        if (null != systemBean) {
+            editor.putString(SYB_NAME, systemBean.getPrj_name());
+            editor.putString(SYB_SERVER, systemBean.getPrj_server());
+            editor.putString(SYB_DATABASE, systemBean.getPrj_database());
+            editor.putString(SYB_UID, systemBean.getPrj_uid());
+            editor.putString(SYB_PWD, systemBean.getPrj_pwd());
+        }
+        if (null != xbBean) {
+            editor.putString(XT_NAME, xbBean.getV_xbname());
+            editor.putString(XT_CODE, xbBean.getV_xbdm());
+        }
+        if (null != gzBean1) {
+            editor.putString(GZ_Code_3, gzBean1.getV_gzdm());
+            editor.putString(GZ_NAME_3, gzBean1.getV_gzname());
+        }
+        if (null != gzBean2) {
+            editor.putString(GZ_Code_4, gzBean2.getV_gzdm());
+            editor.putString(GZ_NAME_4, gzBean2.getV_gzname());
+        }
         editor.commit();
     }
     public Map<String,String> getSybXtGz(){

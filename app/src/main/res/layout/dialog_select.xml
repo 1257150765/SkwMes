@@ -69,58 +69,7 @@
 
 
     </LinearLayout>
-    <LinearLayout
-        android:background="@drawable/border_shape"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="100dp">
-        <TextView
-            android:textColor="@color/black"
-            android:gravity="center"
-            android:textSize="@dimen/bigTextSize"
-            android:text="一轨工站："
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:background="@android:color/darker_gray"
-            android:layout_width="1px"
-            android:layout_height="match_parent" />
-        <Spinner
-            android:gravity="center"
-            android:id="@+id/sp_road1_gz_dialog_select"
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:layout_height="100dp"/>
 
-
-    </LinearLayout>
-    <LinearLayout
-        android:background="@drawable/border_shape"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="100dp">
-        <TextView
-            android:textColor="@color/black"
-            android:gravity="center"
-            android:textSize="@dimen/bigTextSize"
-            android:text="二轨工站："
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent" />
-        <TextView
-            android:background="@android:color/darker_gray"
-            android:layout_width="1px"
-            android:layout_height="match_parent" />
-        <Spinner
-            android:gravity="center"
-            android:id="@+id/sp_road2_gz_dialog_select"
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:layout_height="100dp"/>
-
-
-    </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

@@ -1,18 +1,25 @@
 package com.ruiduoyi.skwmes.net;
 
+import com.ruiduoyi.skwmes.bean.DateBean;
 import com.ruiduoyi.skwmes.bean.GzBean;
+import com.ruiduoyi.skwmes.bean.InfoBean;
 import com.ruiduoyi.skwmes.bean.StopOrder;
 import com.ruiduoyi.skwmes.bean.SystemBean;
 import com.ruiduoyi.skwmes.bean.UpdateBean;
 import com.ruiduoyi.skwmes.bean.XbBean;
+import com.ruiduoyi.skwmes.util.LogWraper;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -32,7 +39,19 @@ public class RetrofitManager {
     }
     static Retrofit retrofit;
     public static void init(){
+
+        Interceptor logInterceptor = new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Request request = chain.request();
+                //在这里获取到request后就可以做任何事情了
+                LogWraper.d("Net",request.toString());
+                Response response = chain.proceed(request);
+                return response;
+            }
+        };
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(logInterceptor)
                 .build();
         retrofit = new Retrofit.Builder()
                 .client(okHttpClient)
@@ -73,6 +92,16 @@ public class RetrofitManager {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
+    public static Observable<DateBean> getDate(){
+        return retrofit.create(Api.class).getDate()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+    public static Observable<InfoBean> getInfoBean(String fcServer, String fcDataBase,String fcUid,String fcPwd,String fcXbdm,String fcGzdm){
+        return retrofit.create(Api.class).getInfoBean(fcServer,fcDataBase,fcUid,fcPwd,fcXbdm,fcGzdm)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
     interface Api{
         @GET("GetStopOrder")
         Observable<StopOrder> getStopOrder();
@@ -84,5 +113,9 @@ public class RetrofitManager {
         Observable<XbBean> getXbBean(@Query("fcServer") String fcServer,@Query("fcDataBase") String fcDataBase,@Query("fcUid") String fcUid,@Query("fcPwd") String fcPwd);
         @GET("GetOprList")
         Observable<GzBean> getGzBean(@Query("fcServer") String fcServer, @Query("fcDataBase") String fcDataBase, @Query("fcUid") String fcUid, @Query("fcPwd") String fcPwd);
+        @GET("GetErlList")
+        Observable<InfoBean> getInfoBean(@Query("fcServer") String fcServer, @Query("fcDataBase") String fcDataBase, @Query("fcUid") String fcUid, @Query("fcPwd") String fcPwd, @Query("fcXbdm") String fcXbdm, @Query("fcGzdm") String fcGzdm);
+        @GET("GetSrvDateTime")
+        Observable<DateBean> getDate();
     }
 }

@@ -1,6 +1,7 @@
 package com.ruiduoyi.skwmes.contact;
 
 import com.ruiduoyi.skwmes.bean.GzBean;
+import com.ruiduoyi.skwmes.bean.InfoBean;
 import com.ruiduoyi.skwmes.bean.SystemBean;
 import com.ruiduoyi.skwmes.bean.XbBean;
 
@@ -15,11 +16,12 @@ public interface MainActivityContact {
         void init();
         void checkUpdate();
         void update(String url);
-        void loadXtAndGz(SystemBean.UcDataBean sybStr);
+        void loadXt(SystemBean.UcDataBean sybStr);
+        void loadGz();
         void loadSyb();
         void changeGzms(String gzms3,String gzms4);
         void detroy();
-
+        void changeGzxx(String road1GzxxStr, String road2GzxxStr);
     }
     interface View{
         void onLoadSybSecceed(SystemBean sybData);
@@ -31,10 +33,11 @@ public interface MainActivityContact {
         void onLoad(boolean isLoad);
         void onStartSend(String gpioIndex);
         void onStopSend(String gpioIndex);
-        void setSybXtGz(String sybStr, String xtStr, String gzStr1, String gzStr2);
-
+        void setSybXt(String sybStr, String xtStr);
+        void setGz( String gzStr1, String gzStr2);
         void onLoadXtSucceed(List<XbBean.UcDataBean> value);
-
         void onLoadGzSucceed(List<GzBean.UcDataBean> ucData);
+        void onDateUpdate(String date);
+        void onLoadInfoSucceed(InfoBean.UcDataBean info3, InfoBean.UcDataBean info4);
     }
 }

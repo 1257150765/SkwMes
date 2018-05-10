@@ -40,20 +40,13 @@ public class SelectDialog extends AlertDialog {
     private Context context;
     @BindView(R.id.sp_xt_dialog_select)
     Spinner spXt;
-    @BindView(R.id.sp_road1_gz_dialog_select)
-    Spinner spGz1;
-    @BindView(R.id.sp_road2_gz_dialog_select)
-    Spinner spGz2;
+
 
     private View mRootView;
     private ArrayAdapter<String> xtAdapter;
     private ArrayAdapter<String> sybAdapter;
-    private ArrayAdapter<String> gzAdapter;
     private List<XbBean.UcDataBean> xtData;
     private List<SystemBean.UcDataBean> sybData;
-    private List<GzBean.UcDataBean> gzData;
-    private GzBean.UcDataBean gzBean1 = null;
-    private GzBean.UcDataBean gzBean2 = null;
     private XbBean.UcDataBean xtBean = null;
     private SystemBean.UcDataBean sybBean = null;
     private SelectListener selectListener;
@@ -89,7 +82,7 @@ public class SelectDialog extends AlertDialog {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 sybBean = sybData.get(position);
                 if (null != selectListener ){
-                    selectListener.onSelectSyb(sybBean);
+                    selectListener.onSelectSystem(sybBean);
                 }
             }
 
@@ -109,28 +102,7 @@ public class SelectDialog extends AlertDialog {
 
             }
         });
-        spGz1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                gzBean1 = gzData.get(position);
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-        spGz2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                gzBean2 = gzData.get(position);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
     }
 
 
@@ -143,7 +115,7 @@ public class SelectDialog extends AlertDialog {
         this.xtData = xtData;
         List<String> data = new ArrayList<>();
         for (XbBean.UcDataBean bean: xtData){
-            data.add(bean.getV_xbdm()+bean.getV_xbname());
+            data.add(bean.getV_xbdm()+" "+bean.getV_xbname());
         }
         xtAdapter = new ArrayAdapter<String>(context, R.layout.item_select_dialog, data);
         spXt.setAdapter(xtAdapter);
@@ -151,28 +123,7 @@ public class SelectDialog extends AlertDialog {
         xtAdapter.notifyDataSetChanged();
     }
 
-    /**
-     * 设置工站
-     *
-     * @param gzData
-     */
-    public void setGzData(List<GzBean.UcDataBean> gzData) {
-        //一轨工站
-        this.gzData = gzData;
-        List<String> data = new ArrayList<>();
-        for (GzBean.UcDataBean bean: gzData){
-            data.add(bean.getV_gzdm()+bean.getV_gzname());
-        }
-        gzAdapter = new ArrayAdapter<String>(context, R.layout.item_select_dialog, data);
-        spGz1.setAdapter(gzAdapter);
-        spGz1.setSelection(0);
-        gzAdapter.notifyDataSetChanged();
-        //二轨工站
 
-        spGz2.setAdapter(gzAdapter);
-        spGz2.setSelection(0);
-        gzAdapter.notifyDataSetChanged();
-    }
 
     public void show(View view) {
         //showAtLocation(view, Gravity.CENTER,0,0);
@@ -205,19 +156,12 @@ public class SelectDialog extends AlertDialog {
             Snackbar.make(mRootView, "请选择线体", Snackbar.LENGTH_SHORT).show();
             return;
         }
-        if (null == gzBean1) {
-            Snackbar.make(mRootView, "请选择一轨工站", Snackbar.LENGTH_SHORT).show();
-            return;
-        }
-        if (null == gzBean2) {
-            Snackbar.make(mRootView, "请选择二轨工站", Snackbar.LENGTH_SHORT).show();
-            return;
-        }
+
         //数据验证正确，回调
         if (selectListener != null) {
-            selectListener.onSelect(sybBean,xtBean, gzBean1,gzBean2);
+            selectListener.onSelect(sybBean,xtBean);
         }
-        preferencesUtil.setSybXtGz(sybBean,xtBean,gzBean1,gzBean2);
+        preferencesUtil.setSybXtGz(sybBean,xtBean,null,null);
         dismiss();
     }
 
@@ -234,7 +178,7 @@ public class SelectDialog extends AlertDialog {
     }
 
     public interface SelectListener {
-        void onSelectSyb(SystemBean.UcDataBean sybStr);
-        void onSelect(SystemBean.UcDataBean sybStr, XbBean.UcDataBean xtStr, GzBean.UcDataBean gzStr, GzBean.UcDataBean gzBean2);
+        void onSelectSystem(SystemBean.UcDataBean sybStr);
+        void onSelect(SystemBean.UcDataBean sybStr, XbBean.UcDataBean xtStr);
     }
 }

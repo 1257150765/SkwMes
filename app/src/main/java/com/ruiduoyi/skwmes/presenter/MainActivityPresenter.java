@@ -6,7 +6,9 @@ import android.content.pm.PackageManager;
 import android.os.Environment;
 
 import com.ruiduoyi.skwmes.Config;
+import com.ruiduoyi.skwmes.bean.DateBean;
 import com.ruiduoyi.skwmes.bean.GzBean;
+import com.ruiduoyi.skwmes.bean.InfoBean;
 import com.ruiduoyi.skwmes.bean.StopOrder;
 import com.ruiduoyi.skwmes.bean.SystemBean;
 import com.ruiduoyi.skwmes.bean.UpdateBean;
@@ -17,7 +19,12 @@ import com.ruiduoyi.skwmes.util.DownloadUtils;
 import com.ruiduoyi.skwmes.util.GpioUtil;
 import com.ruiduoyi.skwmes.util.LogWraper;
 import com.ruiduoyi.skwmes.util.PreferencesUtil;
+import com.ruiduoyi.skwmes.util.Util;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -48,6 +55,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     private GpioUtil gpioUtil4;
     Timer timer = new Timer();
     Timer timer2 = new Timer();
+    Timer dateTimer = new Timer();
     private boolean isConnect = false;
 
     private String gzms3 = "";
@@ -55,8 +63,8 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     private String gzxx3 = "";
     private String gzxx4 = "";
     private PreferencesUtil preferencesUtil;
-
-    private StopOrder value;
+    private boolean isFirstTime = true;
+    private InfoBean value;
 
 
     public MainActivityPresenter(MainActivityContact.View view, Activity context) {
@@ -65,20 +73,21 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
         preferencesUtil = new PreferencesUtil(context);
         gzms3 = preferencesUtil.getGZMS3();
         gzms4 = preferencesUtil.getGZMS4();
-        view.onGpioGzmsChange(GPIO_INDEX_3,gzms3);
-        view.onGpioGzmsChange(GPIO_INDEX_4,gzms4);
+        gzxx3 = preferencesUtil.getSybXtGz().get(PreferencesUtil.GZ_Code_3);
+        gzxx4 = preferencesUtil.getSybXtGz().get(PreferencesUtil.GZ_Code_4);
+        view.onGpioGzmsChange(gzms3,gzms4);
         init();
     }
 
     @Override
     public void init() {
         //RetrofitManager.init();
-
         Map<String, String> sybXtGz = preferencesUtil.getSybXtGz();
         if (null == sybXtGz){
             loadSyb();
         }else {
-            view.setSybXtGz(sybXtGz.get(PreferencesUtil.SYB_NAME),sybXtGz.get(PreferencesUtil.XT_NAME),sybXtGz.get(PreferencesUtil.GZ_NAME_3), sybXtGz.get(PreferencesUtil.GZ_NAME_4));
+            view.setSybXt(sybXtGz.get(PreferencesUtil.SYB_NAME),sybXtGz.get(PreferencesUtil.XT_NAME));
+            view.setGz(sybXtGz.get(PreferencesUtil.GZ_NAME_3), sybXtGz.get(PreferencesUtil.GZ_NAME_4));
         }
         gpioUtil3 = new GpioUtil(GPIO_INDEX_3, this);
         gpioUtil4 = new GpioUtil(GPIO_INDEX_4,this);
@@ -94,29 +103,31 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                             stopSend(GPIO_INDEX_3);
                             LogWraper.d(TAG,"没有接收到服务器命令");
                         }else {
-                            String isStop = value.getIsStop();
-                            LogWraper.d(TAG,"接收到服务器命令,一轨指令--"+isStop);
-                            if (Config.IS_STOP_1.equals(isStop)) {
-                                gpioUtil3.sendOne();
-                                startSend(GPIO_INDEX_3);
-                                LogWraper.d(TAG,"一轨发送一次信号");
-                            } else if (Config.IS_STOP_0.equals(isStop)||!isConnect) {
-                                //stopSend(GPIO_INDEX_3);
-                                //当接收到暂停命令时，不做处理即可，
-                                stopSend(GPIO_INDEX_3);
+                            for (InfoBean.UcDataBean bean:value.getUcData()){
+                                //循环找到对应的工站
+                                if (gzxx3.equals(bean.getErl_gzdm())){
+                                    LogWraper.d(TAG,"接收到服务器命令,一轨指令--"+bean.isErl_signal());
+                                    if (bean.isErl_signal()) {
+                                        gpioUtil3.sendOne();
+                                        startSend(GPIO_INDEX_3);
+                                        LogWraper.d(TAG,"一轨发送一次信号");
+                                    } else if (!bean.isErl_signal()||!isConnect) {
+                                        //stopSend(GPIO_INDEX_3);
+                                        //当接收到暂停命令时，不做处理即可，
+                                        stopSend(GPIO_INDEX_3);
+                                    }
+                                }
                             }
+
+
                         }
                         break;
                     //手工放行
                     case Config.GZMS_SGFX:
-                        if (null == value){
-                            LogWraper.d(TAG,"没有接收到服务器命令");
-                        }else {
-                            String isStop = value.getIsStop();
-                            LogWraper.d(TAG,"一轨发送一次信号");
-                            gpioUtil3.sendOne();
-                            startSend(GPIO_INDEX_3);
-                        }
+                        LogWraper.d(TAG,"一轨发送一次信号");
+                        gpioUtil3.sendOne();
+                        startSend(GPIO_INDEX_3);
+
                         break;
                     //暂停运行
                     case Config.GZMS_ZTYX:
@@ -133,28 +144,28 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                             stopSend(GPIO_INDEX_4);
                         }else {
                             //轨道二
-                            String isStop2 = value.getIsStop2();
-                            LogWraper.d(TAG,"接收到服务器命令,二轨指令--"+isStop2);
-                            if (Config.IS_STOP_1.equals(isStop2)) {
-                                LogWraper.d(TAG,"二轨发送一次信号");
-                                gpioUtil4.sendOne();
-                                startSend(GPIO_INDEX_4);
-                            } else if (Config.IS_STOP_0.equals(isStop2)||!isConnect) {
-                                //stopSend(GPIO_INDEX_4);
-                                //当接收到暂停命令时，不做处理即可，
-                                stopSend(GPIO_INDEX_4);
+                            for (InfoBean.UcDataBean bean:value.getUcData()){
+                                //循环找到对应的工站
+                                if (gzxx4.equals(bean.getErl_gzdm())){
+                                    LogWraper.d(TAG,"接收到服务器命令,二轨指令--"+bean.isErl_signal());
+                                    if (bean.isErl_signal()) {
+                                        gpioUtil4.sendOne();
+                                        startSend(GPIO_INDEX_4);
+                                        LogWraper.d(TAG,"二轨发送一次信号");
+                                    } else if (!bean.isErl_signal()||!isConnect) {
+                                        //stopSend(GPIO_INDEX_3);
+                                        //当接收到暂停命令时，不做处理即可，
+                                        stopSend(GPIO_INDEX_4);
+                                    }
+                                }
                             }
                         }
                         break;
                     //手工放行
                     case Config.GZMS_SGFX:
-                        if (null == value){
-                            LogWraper.d(TAG,"没有接收到服务器命令");
-                        }else {
-                            LogWraper.d(TAG,"二轨发送一次信号");
-                            gpioUtil4.sendOne();
-                            startSend(GPIO_INDEX_4);
-                        }
+                        LogWraper.d(TAG,"二轨发送一次信号");
+                        gpioUtil4.sendOne();
+                        startSend(GPIO_INDEX_4);
                         break;
                     //暂停运行
                     case Config.GZMS_ZTYX:
@@ -163,16 +174,39 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                     default:
                         break;
                 }
-                RetrofitManager.getSystemName().subscribe(new Observer<SystemBean>() {
+                RetrofitManager.getDate().subscribe(new Observer<DateBean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
                     @Override
-                    public void onNext(final SystemBean value) {
+                    public void onNext(final DateBean value) {
                         if (context.isDestroyed()){
                             return;
                         }
+                       if (isFirstTime) {
+                            isFirstTime = false;
+                           String time = value.getUcData().get(0)
+                                   .getV_curdate().replaceAll("-", "")
+                                   .replaceAll(" ", "\\.")
+                                   .replaceAll(":", "");
+                           LogWraper.d(TAG,"初始化APP，设置系统时间"+time);
+                           Util.setSystemTime(context,time);
+                           final SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd E");
+                           dateTimer.schedule(new TimerTask() {
+                               @Override
+                               public void run() {
+                                   final String date = format.format(new Date());
+                                   context.runOnUiThread(new Runnable() {
+                                       @Override
+                                       public void run() {
+                                           view.onDateUpdate(date);
+                                       }
+                                   });
+                               }
+                           },0,12*60*60*1000);
+
+                       }
                         LogWraper.d(TAG,"检测与服务器的连接");
                         //每次有返回值表示与服务器有连接
                         isConnect = true;
@@ -204,13 +238,24 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
         timer2.schedule(new TimerTask() {
             @Override
             public void run() {
-                /*RetrofitManager.getStopOrder().subscribe(new Observer<StopOrder>() {
+                if (!isConnect){
+                    return;
+                }
+                Map<String, String> sybXtGz1 = preferencesUtil.getSybXtGz();
+
+                RetrofitManager.getInfoBean(sybXtGz1.get(PreferencesUtil.SYB_SERVER),
+                        sybXtGz1.get(PreferencesUtil.SYB_DATABASE),
+                        sybXtGz1.get(PreferencesUtil.SYB_UID),
+                        sybXtGz1.get(PreferencesUtil.SYB_PWD),
+                        sybXtGz1.get(PreferencesUtil.XT_CODE),
+                        sybXtGz1.get(PreferencesUtil.GZ_Code_3)+","+ sybXtGz1.get(PreferencesUtil.GZ_Code_4)
+                        ).subscribe(new Observer<InfoBean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
                     @Override
-                    public void onNext(final StopOrder value) {
+                    public void onNext(final InfoBean value) {
                         if (context.isDestroyed()){
                             return;
                         }
@@ -218,51 +263,18 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                         //每次有返回值表示与服务器有连接
                         MainActivityPresenter.this.value = value;
                         isConnect = true;
-                        LogWraper.d(TAG, "" + value.getIsStop());
                         view.onNetInfoChange(Config.IS_STOP_1);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        //e.printStackTrace();
-                        //请求网络出错
-                        isConnect = false;
-                        view.onNetInfoChange(Config.IS_STOP_0);
-                        MainActivityPresenter.this.value = null;
-                        context.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                view.onStopSend(GPIO_INDEX_3);
-                                view.onStopSend(GPIO_INDEX_4);
+                        InfoBean.UcDataBean info3 = null;
+                        InfoBean.UcDataBean info4 = null;
+                        for (InfoBean.UcDataBean bean:value.getUcData()){
+                            if (gzxx3.equals(bean.getErl_gzdm())){
+                                info3 = bean;
                             }
-                        });
-                    }
-                    @Override
-                    public void onComplete() {
-                    }
-                });*/
-                //检测到服务器连接失败，不请求数据
-                if (!isConnect){
-                    return;
-                }
-                RetrofitManager.getSystemName().subscribe(new Observer<SystemBean>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-                    @Override
-                    public void onNext(final SystemBean value) {
-                        if (context.isDestroyed()){
-                            return;
+                            if (gzxx4.equals(bean.getErl_gzdm())){
+                                info4 = bean;
+                            }
                         }
-                        LogWraper.d(TAG,"开始请求下一次发送命令");
-                        //每次有返回值表示与服务器有连接
-                        StopOrder stopOrder = new StopOrder();
-                        stopOrder.setIsStop("1");
-                        stopOrder.setIsStop2("1");
-                        MainActivityPresenter.this.value = stopOrder;
-                        isConnect = true;
-                        view.onNetInfoChange(Config.IS_STOP_1);
+                        view.onLoadInfoSucceed(info3,info4);
                     }
 
                     @Override
@@ -367,7 +379,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     }
 
     @Override
-    public void loadXtAndGz(SystemBean.UcDataBean syb) {
+    public void loadXt(SystemBean.UcDataBean syb) {
         RetrofitManager.getXbBean(syb.getPrj_server(),syb.getPrj_database(),syb.getPrj_uid(),syb.getPrj_pwd())
                 .subscribe(new Observer<XbBean>() {
                     @Override
@@ -382,9 +394,16 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                     }
                     @Override
                     public void onComplete() {
+
                     }
                 });
-        RetrofitManager.getGzBean(syb.getPrj_server(),syb.getPrj_database(),syb.getPrj_uid(),syb.getPrj_pwd())
+
+    }
+
+    @Override
+    public void loadGz() {
+        Map<String, String> sybXtGz = preferencesUtil.getSybXtGz();
+        RetrofitManager.getGzBean(sybXtGz.get(PreferencesUtil.SYB_SERVER), sybXtGz.get(PreferencesUtil.SYB_DATABASE), sybXtGz.get(PreferencesUtil.SYB_UID), sybXtGz.get(PreferencesUtil.SYB_PWD))
                 .subscribe(new Observer<GzBean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -398,13 +417,14 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
                     @Override
                     public void onError(Throwable e) {
-
+                        e.printStackTrace();
                     }
 
                     @Override
                     public void onComplete() {
                     }
                 });
+
     }
 
     @Override
@@ -442,67 +462,17 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
             view.onGpioGzmsChange(road1GzmsStr,road2GzmsStr);
     }
 
-
-
-    /**
-     * 启动发送
-     * @param gpioIndex 引脚
-     *//*
-
-    private void startSend(final String gpioIndex) {
-        if (GPIO_INDEX_3.equals(gpioIndex)) {
-            if (null != gpioUtil3) {
-                shouDong3 = true;
-                //保存手工设置的状态
-                preferencesUtil.setShouDong3(true);
-            }
-
-        } else if (GPIO_INDEX_4.equals(gpioIndex)) {
-            if (null != gpioUtil4) {
-                shouDong4 = true;
-                preferencesUtil.setShouDong4(true);
-            }
-        }
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                view.onStartSend(gpioIndex);
-            }
-        });
-
-    }
-
-    *//**
-     * 停止发送
-     * @param
-     *//*
-
-    private void stopSend(final String gpioIndex) {
-        if (GPIO_INDEX_3.equals(gpioIndex)) {
-            if (null != gpioUtil3) {
-                shouDong3 = false;
-                //保存手工设置的状态
-                preferencesUtil.setShouDong3(false);
-            }
-        } else if (GPIO_INDEX_4.equals(gpioIndex)) {
-            if (null != gpioUtil4) {
-                shouDong4 = false;
-                preferencesUtil.setShouDong4(false);
-            }
-        }
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                view.onStopSend(gpioIndex);
-            }
-        });
-
-
-    }*/
-
     @Override
     public void detroy() {
         timer.cancel();
+        timer2.cancel();
+        dateTimer.cancel();
+    }
+
+    @Override
+    public void changeGzxx(String road1GzxxStr, String road2GzxxStr) {
+        gzxx3 = road1GzxxStr;
+        gzxx4 = road2GzxxStr;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.ruiduoyi.skwmes;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ruiduoyi.skwmes.bean.GzBean;
+import com.ruiduoyi.skwmes.bean.InfoBean;
 import com.ruiduoyi.skwmes.bean.SystemBean;
 import com.ruiduoyi.skwmes.bean.XbBean;
 import com.ruiduoyi.skwmes.contact.MainActivityContact;
@@ -30,13 +32,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.ruiduoyi.skwmes.presenter.MainActivityPresenter.GPIO_INDEX;
 import static com.ruiduoyi.skwmes.presenter.MainActivityPresenter.GPIO_INDEX_3;
 import static com.ruiduoyi.skwmes.presenter.MainActivityPresenter.GPIO_INDEX_4;
-import static com.ruiduoyi.skwmes.presenter.MainActivityPresenter.REQUEST_CODE_CHANGEGPIO;
 import static com.ruiduoyi.skwmes.presenter.MainActivityPresenter.REQUEST_CODE_CHANGSYBXTGZ;
 
-public class MainActivity extends AppCompatActivity implements MainActivityContact.View, DialogInterface.OnDismissListener, SelectDialog.SelectListener {
+public class MainActivity extends AppCompatActivity implements MainActivityContact.View, DialogInterface.OnDismissListener, SelectDialog.SelectListener, RoadSettingDialog.RoadSettingListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CODE_ROAD_SETTING = 1003;
 
@@ -89,6 +89,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     private AlertDialog downloadDialog;
     private ProgressDialog downloadProgressDialog;
     private SelectDialog selectDialog;
+    private RoadSettingDialog roadSettingDialog;
+    private String gzStr1;
+    private String gzStr2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         hideBottomUIMenu();
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        preferencesUtil = new PreferencesUtil(this);
         init();
         presenter = new MainActivityPresenter(this, this);
     }
@@ -159,11 +163,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
             dialog.show();
         }
     }
-    @Override
-    public void onGpioGzmsChange(String gzms1, String gzms2) {
-        tvRoad1Setting.setText("一轨工作模式:" + gzms1);
-        tvRoad2Setting.setText("二轨工作模式:" + gzms2);
-    }
+
 
     /**
      * 系统更新中
@@ -265,6 +265,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         switch (view.getId()) {
             case R.id.btn_roadsetting_mainactivity:
                 //checkPwd2ChangeGpioStatu(GPIO_INDEX_3);
+                if (null == preferencesUtil.getSybXtGz()){
+                    onShowMsgDialog("请先选择系统");
+                }
                 checkPwd2RoadSetting();
                 break;
             case R.id.btn_changepwd_mainactivity:
@@ -277,12 +280,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     }
 
     private void checkPwd2RoadSetting() {
-        if (!isConnect) {
-            onShowMsgDialog("与服务器已断开连接");
-            return;
-        }
-        Intent intent = new Intent(MainActivity.this, ChangeGpioActivity.class);
         //检查权限
+        Intent intent = new Intent(MainActivity.this, ChangeGpioActivity.class);
         startActivityForResult(intent, REQUEST_CODE_ROAD_SETTING);
     }
 
@@ -296,24 +295,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     }
 
     /**
-     * 检查密码，然后改变gpio运行状态
-     *
-     * @param gpioIndex 引脚
-     */
-    public void checkPwd2ChangeGpioStatu(String gpioIndex) {
-
-        if (!isConnect) {
-            onShowMsgDialog("与服务器已断开连接");
-            return;
-        }
-        Intent intent = new Intent(MainActivity.this, ChangeGpioActivity.class);
-        intent.putExtra(GPIO_INDEX, gpioIndex);
-        //检查权限
-        startActivityForResult(intent, REQUEST_CODE_CHANGEGPIO);
-    }
-
-    /**
-     * 检查密码，然后改变事业部，线体，工站
+     * 检查密码，然后改变系统名称，线体，工站
      */
     public void checkPwd2ChangeSystem() {
         if (!isConnect) {
@@ -338,13 +320,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         hideBottomUIMenu();
         if (requestCode == REQUEST_CODE_ROAD_SETTING) {
             if (resultCode == RESULT_OK) {
-                RoadSettingDialog roadSettingDialog = new RoadSettingDialog(MainActivity.this);
-                roadSettingDialog.setRoadSettingListener(new RoadSettingDialog.RoadSettingListener() {
-                    @Override
-                    public void onRoadSetting(String road1GzmsStr, String road2GzmsStr) {
-                        presenter.changeGzms(road1GzmsStr, road2GzmsStr);
-                    }
-                });
+                roadSettingDialog = new RoadSettingDialog(MainActivity.this);
+                presenter.loadGz();
+                roadSettingDialog.setRoadSettingListener(this);
                 roadSettingDialog.show();
             }
         }
@@ -354,6 +332,97 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
             }
         }
     }
+    //显示工作模式
+    @Override
+    public void onGpioGzmsChange(String gzms1, String gzms2) {
+        tvRoad1Setting.setText("工作模式:" + gzms1);
+        tvRoad2Setting.setText("工作模式:" + gzms2);
+
+    }
+    //选择系统
+    @Override
+    public void onSelectSystem(SystemBean.UcDataBean sybBean) {
+        //线体和工站不在同一个地方选取，但是为了方便才一起加载
+        presenter.loadXt(sybBean);
+    }
+
+    //选择所有信息回调
+    @Override
+    public void onSelect(SystemBean.UcDataBean sybBean, XbBean.UcDataBean xtBean) {
+        setSybXt(sybBean.getPrj_name(), xtBean.getV_xbdm()+" "+xtBean.getV_xbname());
+        //presenter.changeGpioStatu(GPIO_INDEX_3);
+        //presenter.changeGpioStatu(GPIO_INDEX_4);
+    }
+
+    //显示系统名称和线体名称
+    @Override
+    public void setSybXt(String sybStr, String xtStr) {
+        tvSyb.setText("系统名称:" + sybStr);
+        tvXt.setText("生产线体:" + xtStr);
+    }
+
+    //显示工站
+    @Override
+    public void setGz(String gzStr1, String gzStr2) {
+        this.gzStr1 = gzStr1;
+        this.gzStr2 = gzStr2;
+        tvRoad1Gz.setText(gzStr1);
+        tvRoad2Gz.setText(gzStr2);
+    }
+    //成功加载线体
+    @Override
+    public void onLoadXtSucceed(List<XbBean.UcDataBean> ucData) {
+        selectDialog.setXtData(ucData);
+    }
+    //成功加载工站
+    @Override
+    public void onLoadGzSucceed(List<GzBean.UcDataBean> gzData) {
+        LogWraper.d(TAG,""+gzData);
+        roadSettingDialog.setGzData(gzData);
+    }
+    //成功更新时间
+    @Override
+    public void onDateUpdate(String date) {
+        tvDate.setText(date);
+    }
+
+    @Override
+    public void onLoadInfoSucceed(InfoBean.UcDataBean info3, InfoBean.UcDataBean info4) {
+        if (null != info3){
+            int color = getBackColor(info3.getErl_color());
+            tvErrorinfo1.setTextColor(color);
+            tvErrorinfo1.setText(info3.getErl_allycms());
+        }
+        if (null != info4){
+            int color = getBackColor(info4.getErl_color());
+            tvErrorinfo2.setTextColor(color);
+            tvErrorinfo2.setText(info4.getErl_allycms());
+        }
+    }
+
+    private int getBackColor(String erl_color) {
+        int color = 0;
+        switch (erl_color){
+            case "R":
+                color = Color.RED;
+                break;
+            /*    break;
+            case "G":
+                color = Color.GREEN;
+                break;
+            case "B":
+                color = Color.BLUE;
+                break;
+            case "Y":
+                color = Color.YELLOW;
+                break;*/
+            default:
+                color = Color.BLACK;
+                break;
+        }
+        return color;
+    }
+
 
     @Override
     protected void onDestroy() {
@@ -381,36 +450,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         hideBottomUIMenu();
     }
 
-    //选择事业部
     @Override
-    public void onSelectSyb(SystemBean.UcDataBean sybBean) {
-        presenter.loadXtAndGz(sybBean);
-    }
-
-    //选择所有信息
-    @Override
-    public void onSelect(SystemBean.UcDataBean sybBean, XbBean.UcDataBean xtBean, GzBean.UcDataBean gzBean1, GzBean.UcDataBean gzBean2) {
-        setSybXtGz(sybBean.getPrj_name(), xtBean.getV_xbname(), gzBean1.getV_gzname(), gzBean2.getV_gzname());
-        //presenter.changeGpioStatu(GPIO_INDEX_3);
-        //presenter.changeGpioStatu(GPIO_INDEX_4);
-    }
-
-    //设置系统状态
-    @Override
-    public void setSybXtGz(String sybStr, String xtStr, String gzStr1, String gzStr2) {
-        tvSyb.setText("系统名称:" + sybStr);
-        tvXt.setText("生产线体:" + xtStr);
-        tvRoad1Gz.setText("工站信息:"+gzStr1);
-        tvRoad2Gz.setText("工站信息:"+gzStr2);
-    }
-
-    @Override
-    public void onLoadXtSucceed(List<XbBean.UcDataBean> ucData) {
-        selectDialog.setXtData(ucData);
-    }
-
-    @Override
-    public void onLoadGzSucceed(List<GzBean.UcDataBean> ucData) {
-        selectDialog.setGzData(ucData);
+    public void onRoadSetting(String road1GzmsStr, String road2GzmsStr, GzBean.UcDataBean road1Bean, GzBean.UcDataBean road2Bean) {
+        presenter.changeGzms(road1GzmsStr, road2GzmsStr);
+        presenter.changeGzxx(road1Bean.getV_gzdm(),road2Bean.getV_gzdm());
+        setGz(road1Bean.getV_gzname(),road2Bean.getV_gzname());
     }
 }
