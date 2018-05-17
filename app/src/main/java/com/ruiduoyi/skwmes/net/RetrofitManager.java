@@ -105,7 +105,7 @@ public class RetrofitManager {
     interface Api{
         @GET("GetStopOrder")
         Observable<StopOrder> getStopOrder();
-        @GET("GetUpdateInfo")
+        @GET("GetSrvVersion")
         Observable<UpdateBean> getUpdateInfo();
         @GET("GetPrjList")
         Observable<SystemBean> getSystemName();

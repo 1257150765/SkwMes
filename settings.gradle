@@ -1,1 +1,1 @@
-include ':app', ':Gpiolibrary'
+include ':app', ':Gpiolibrary', ':loadViewLibrary'

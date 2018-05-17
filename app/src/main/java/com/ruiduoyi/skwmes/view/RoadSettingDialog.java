@@ -18,6 +18,7 @@ import com.ruiduoyi.skwmes.util.PreferencesUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -80,6 +81,18 @@ public class RoadSettingDialog extends AlertDialog {
         gzmsData.add(Config.GZMS_ZTYX);
         ArrayAdapter adapter = new ArrayAdapter(context, R.layout.item_select_dialog, gzmsData);
         spRoad1Gzms.setAdapter(adapter);
+        int index3 = 0;
+        int index4 = 0;
+        String gzms3 = preferencesUtil.getGZMS3();
+        String gzms4 = preferencesUtil.getGZMS4();
+        for (int i=0; i<gzmsData.size(); i++){
+            if (gzms3.equals(gzmsData.get(i))){
+                index3 = i;
+            }
+            if (gzms4.equals(gzmsData.get(i))){
+                index4 = i;
+            }
+        }
         spRoad1Gzms.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -91,6 +104,7 @@ public class RoadSettingDialog extends AlertDialog {
 
             }
         });
+        spRoad1Gzms.setSelection(index3,true);
         spRoad2Gzms.setAdapter(adapter);
         spRoad2Gzms.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -103,6 +117,7 @@ public class RoadSettingDialog extends AlertDialog {
 
             }
         });
+        spRoad2Gzms.setSelection(index4,true);
         //工站信息
         spGz1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -136,6 +151,7 @@ public class RoadSettingDialog extends AlertDialog {
                 break;
             case R.id.tv_ok_dialog_roadsetting:
                 if (null != roadSettingListener){
+                    //当连接不到网络的时候，不保存工站信息
                     preferencesUtil.setSybXtGz(null,null,gzBean1,gzBean2);
                     roadSettingListener.onRoadSetting(road1GzmsStr,road2GzmsStr,gzBean1,gzBean2);
                 }
@@ -152,19 +168,37 @@ public class RoadSettingDialog extends AlertDialog {
     public void setGzData(List<GzBean.UcDataBean> gzData) {
         //一轨工站
         this.gzData = gzData;
+        Map<String, String> sybXtGz = preferencesUtil.getSybXtGz();
+        String gzCode3 = "";
+        String gzCode4 = "";
+        if (sybXtGz != null) {
+            gzCode3 = sybXtGz.get(PreferencesUtil.GZ_Code_3);
+            gzCode4 = sybXtGz.get(PreferencesUtil.GZ_Code_4);
+        }
         List<String> data = new ArrayList<>();
+        sybXtGz.get(PreferencesUtil.GZ_Code_3);
+        int index3 = 0;
+        int index4 = 0;
+        int i = 0;
         for (GzBean.UcDataBean bean: gzData){
             data.add(bean.getV_gzdm()+" "+bean.getV_gzname());
+            if (gzCode3.equals(bean.getV_gzdm())){
+                index3 = i;
+            }
+            if (gzCode4.equals(bean.getV_gzdm())){
+                index4 = i;
+            }
+            i++;
         }
         gzAdapter = new ArrayAdapter<String>(context, R.layout.item_select_dialog, data);
         spGz1.setAdapter(gzAdapter);
-        spGz1.setSelection(0);
-        gzAdapter.notifyDataSetChanged();
+        spGz1.setSelection(index3,true);
+        //gzAdapter.notifyDataSetChanged();
         //二轨工站
 
         spGz2.setAdapter(gzAdapter);
-        spGz2.setSelection(0);
-        gzAdapter.notifyDataSetChanged();
+        spGz2.setSelection(index4,true);
+        //gzAdapter.notifyDataSetChanged();
     }
 
     public interface RoadSettingListener {

@@ -18,13 +18,13 @@ public interface MainActivityContact {
         void update(String url);
         void loadXt(SystemBean.UcDataBean sybStr);
         void loadGz();
-        void loadSyb();
+        void loadSystem();
         void changeGzms(String gzms3,String gzms4);
         void detroy();
         void changeGzxx(String road1GzxxStr, String road2GzxxStr);
     }
     interface View{
-        void onLoadSybSecceed(SystemBean sybData);
+        void onLoadSystemSecceed(SystemBean sybData);
         void onShowMsgDialog(String msg);
         void onGpioGzmsChange(String gzms1, String gzms2);
         void onUpdate(int progress);
@@ -39,5 +39,6 @@ public interface MainActivityContact {
         void onLoadGzSucceed(List<GzBean.UcDataBean> ucData);
         void onDateUpdate(String date);
         void onLoadInfoSucceed(InfoBean.UcDataBean info3, InfoBean.UcDataBean info4);
+        void onUpdateSucceed();
     }
 }

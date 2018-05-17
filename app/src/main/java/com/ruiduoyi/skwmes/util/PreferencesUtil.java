@@ -79,7 +79,6 @@ public class PreferencesUtil {
         map.put(SYB_PWD,preferences.getString(SYB_PWD, ""));
         map.put(XT_NAME,preferences.getString(XT_NAME, ""));
         map.put(XT_CODE,preferences.getString(XT_CODE, ""));
-
         map.put(GZ_Code_3,preferences.getString(GZ_Code_3, ""));
         map.put(GZ_NAME_3,preferences.getString(GZ_NAME_3, ""));
         map.put(GZ_Code_4,preferences.getString(GZ_Code_4, ""));

@@ -6,7 +6,7 @@ package com.ruiduoyi.skwmes;
 
 public class Config {
     //public static final String BASE_URL = "http://192.168.142.1:8082/Ruiduoyi/";
-    public static final String BASE_URL = "http://192.168.2.2:9998/RdyWebService.asmx/";
+    public static final String BASE_URL = "http://192.168.4.249:8888/RdyWebService.asmx/";
     public static final String IS_STOP_1 = "1";
     public static final String IS_STOP_0 = "0";
     public static final long REQUEST_TIME = 5000L;

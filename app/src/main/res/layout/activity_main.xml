@@ -30,7 +30,7 @@
           android:layout_width="60dp"
           android:layout_height="60dp" />
       <TextView
-          android:textColor="@color/white"
+          android:textColor="@drawable/title_select"
           android:layout_centerInParent="true"
           android:id="@+id/tv_title_mainavtivity"
           android:layout_gravity="center"
@@ -60,7 +60,6 @@
        android:layout_height="0dp">
 
       <LinearLayout
-
           android:layout_width="380dp"
           android:layout_height="match_parent"
           android:gravity="start"
@@ -73,7 +72,7 @@
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
              android:gravity="center"
-             android:text="系统名称:SKWMES-EMOK"
+             android:text="请选择系统"
              android:textSize="@dimen/bigTextSize" />
 
          <TextView
@@ -83,7 +82,7 @@
              android:layout_height="wrap_content"
              android:layout_marginTop="40dp"
              android:gravity="center"
-             android:text="线\t\t\t\t\t\t体:SMT01"
+             android:text="请选择线体"
              android:textSize="@dimen/normalTextSize" />
 
          <TextView
@@ -98,11 +97,12 @@
              android:orientation="vertical"
              android:layout_width="250dp"
              android:layout_height="wrap_content">
+
             <Button
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:id="@+id/btn_xtqh_mainactivity"
-                android:background="@drawable/circlecrop_shape_green"
+                android:background="@drawable/orange_selector"
                 android:textSize="@dimen/normalTextSize"
                 android:text="系统切换"
                 android:layout_width="match_parent"
@@ -112,7 +112,7 @@
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:id="@+id/btn_roadsetting_mainactivity"
-                android:background="@drawable/circlecrop_shape_green"
+                android:background="@drawable/orange_selector"
                 android:textSize="@dimen/normalTextSize"
                 android:text="轨道设置"
                 android:layout_width="match_parent"
@@ -122,7 +122,7 @@
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:id="@+id/btn_changepwd_mainactivity"
-                android:background="@drawable/circlecrop_shape_red"
+                android:background="@drawable/blue_selector"
                 android:textSize="@dimen/normalTextSize"
                 android:text="修改密码"
                 android:layout_width="match_parent"
@@ -174,10 +174,10 @@
              android:layout_height="0dp">
             <TextView
                 android:id="@+id/tv_road1_gz_mainactivity"
-                android:textColor="@color/black"
+                android:textColor="@color/red"
                 android:textSize="24sp"
                 android:gravity="center"
-                android:text="一轨数据采集"
+                android:text="请选择采集工站"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <!--运行状态-->
@@ -278,14 +278,18 @@
              android:layout_weight="2"
              android:layout_width="match_parent"
              android:layout_height="0dp">
-            <TextView
-                android:id="@+id/tv_errorinfo2_mainactivity"
-                android:textSize="@dimen/normalTextSize"
-                android:text="异常描述"
+            <ScrollView
                 android:background="@drawable/border_shape"
-                android:layout_width="0dp"
-                android:layout_weight="5"
-                android:layout_height="match_parent" />
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+               <TextView
+                   android:id="@+id/tv_errorinfo1_mainactivity"
+                   android:textSize="@dimen/normalTextSize"
+                   android:text="异常描述"
+                   android:layout_width="wrap_content"
+                   android:layout_height="match_parent" />
+            </ScrollView>
+
          </LinearLayout>
       </LinearLayout>
       <TextView
@@ -307,10 +311,10 @@
           android:layout_height="0dp">
          <TextView
              android:id="@+id/tv_road2_gz_mainactivity"
-             android:textColor="@color/black"
+             android:textColor="@color/red"
              android:textSize="24sp"
              android:gravity="center"
-             android:text="二轨数据采集"
+             android:text="请选择采集工站"
              android:layout_width="wrap_content"
              android:layout_height="wrap_content" />
          <!--运行状态-->
@@ -419,14 +423,19 @@
           android:layout_weight="2"
           android:layout_width="match_parent"
           android:layout_height="0dp">
-         <TextView
-             android:id="@+id/tv_errorinfo1_mainactivity"
-             android:textSize="@dimen/normalTextSize"
-             android:text="异常描述"
+         <ScrollView
              android:background="@drawable/border_shape"
-             android:layout_width="0dp"
-             android:layout_weight="5"
-             android:layout_height="match_parent" />
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/tv_errorinfo2_mainactivity"
+                android:textSize="@dimen/normalTextSize"
+                android:text="异常描述"
+
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+         </ScrollView>
+
       </LinearLayout>
    </LinearLayout>
 
@@ -451,7 +460,7 @@
           android:layout_height="match_parent" />
       <Button
           android:id="@+id/btn_changepwd_mainactivity"
-          android:background="@drawable/circlecrop_shape_red"
+          android:background="@drawacirclecrop_shape_blue_red"
           android:textSize="@dimen/normalTextSize"
           android:text="修改密码"
           android:layout_weight="1"

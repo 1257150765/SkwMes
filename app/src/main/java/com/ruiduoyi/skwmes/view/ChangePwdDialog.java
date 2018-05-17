@@ -4,8 +4,10 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -45,6 +47,7 @@ public class ChangePwdDialog extends AlertDialog {
     private void init(Context context) {
         preferencesUtil = new PreferencesUtil(context);
         mRootView = LayoutInflater.from(context).inflate(R.layout.dialog_changepwd, null, false);
+
         setView(mRootView);
         View decorView = getWindow().getDecorView();
         int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -94,6 +97,14 @@ public class ChangePwdDialog extends AlertDialog {
         Snackbar.make(mRootView,msg, Snackbar.LENGTH_SHORT).show();
     }
 
-
-
+    @Override
+    public void show() {
+        super.show();
+        WindowManager.LayoutParams attributes = getWindow().getAttributes();
+        //attributes.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, 500,getContext().getResources().getDisplayMetrics());
+        //attributes.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, 350,getContext().getResources().getDisplayMetrics());
+        attributes.width = 500;
+        //attributes.height = 400;
+        getWindow().setAttributes(attributes);
+    }
 }

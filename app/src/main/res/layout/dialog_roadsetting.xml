@@ -136,7 +136,7 @@
         <TextView
             android:id="@+id/tv_ok_dialog_roadsetting"
             android:textColor="@color/white"
-            android:background="@color/blue"
+            android:background="@color/lightGreen"
             android:gravity="center"
             android:text="确定"
             android:textSize="@dimen/normalTextSize"

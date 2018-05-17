@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ruiduoyi.skwmes"
     android:versionCode="1"
-    android:versionName="1.0.0.0">
+    android:versionName="1.0.0.3">
     >
     <uses-permission android:name="android.permission.SET_TIME" />
     <uses-permission android:name="android.permission.SET_TIME_ZONE" />
@@ -37,6 +37,7 @@
         </receiver>
         <activity android:name=".ChangeGpioActivity"
             android:theme="@style/Theme.DialogActivity"/>
+        <service android:name=".util.BackGroundService"/>
     </application>
 
 </manifest>

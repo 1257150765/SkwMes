@@ -9,7 +9,6 @@ import com.ruiduoyi.skwmes.Config;
 import com.ruiduoyi.skwmes.bean.DateBean;
 import com.ruiduoyi.skwmes.bean.GzBean;
 import com.ruiduoyi.skwmes.bean.InfoBean;
-import com.ruiduoyi.skwmes.bean.StopOrder;
 import com.ruiduoyi.skwmes.bean.SystemBean;
 import com.ruiduoyi.skwmes.bean.UpdateBean;
 import com.ruiduoyi.skwmes.bean.XbBean;
@@ -21,13 +20,11 @@ import com.ruiduoyi.skwmes.util.LogWraper;
 import com.ruiduoyi.skwmes.util.PreferencesUtil;
 import com.ruiduoyi.skwmes.util.Util;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -42,6 +39,11 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     private static final long SEND_GPIO_TIME = 5000L;
     //每隔多少毫秒请求一次服务器信息
     private static final long REQUEST_STOP_ORDER_TIME = 10000L;
+    private static final long CHECK_UPDATE_TIME = 4*60*60*1000;
+    //自动更新
+    private static final long TYPE_AUTO_UPDATE = 100L;
+    //手动更新
+    private static final long TYPE_HAND_UPDATE = 101L;
     private MainActivityContact.View view;
     private Activity context;
     public static final String GPIO_INDEX_1 = "1";
@@ -53,9 +55,10 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     public static final int REQUEST_CODE_CHANGSYBXTGZ = 1002;
     private GpioUtil gpioUtil3;
     private GpioUtil gpioUtil4;
-    Timer timer = new Timer();
+    /*Timer timer = new Timer();
     Timer timer2 = new Timer();
-    Timer dateTimer = new Timer();
+    Timer dateTimer = new Timer();*/
+    private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
     private boolean isConnect = false;
 
     private String gzms3 = "";
@@ -71,31 +74,49 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
         this.view = view;
         this.context = context;
         preferencesUtil = new PreferencesUtil(context);
-        gzms3 = preferencesUtil.getGZMS3();
-        gzms4 = preferencesUtil.getGZMS4();
-        gzxx3 = preferencesUtil.getSybXtGz().get(PreferencesUtil.GZ_Code_3);
-        gzxx4 = preferencesUtil.getSybXtGz().get(PreferencesUtil.GZ_Code_4);
-        view.onGpioGzmsChange(gzms3,gzms4);
+        //启动服务，把scheduledThreadPoolExecutor保存起来，就不会被销毁
+        //note:服务仅做保存，不做任何处理
+        /*context.startService(new Intent(context, BackGroundService.class));
+        scheduledThreadPoolExecutor = BackGroundService.getScheduledThreadPoolExecutor();
+        if (scheduledThreadPoolExecutor == null){
+            BackGroundService.setScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
+        }*/
+        scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(5);
         init();
     }
 
     @Override
     public void init() {
-        //RetrofitManager.init();
-        Map<String, String> sybXtGz = preferencesUtil.getSybXtGz();
+        //获取已保存的工作模式
+        gzms3 = preferencesUtil.getGZMS3();
+        gzms4 = preferencesUtil.getGZMS4();
+
+        //获取保存的系统名称，线体名称，工站名称
+        final Map<String, String> sybXtGz = preferencesUtil.getSybXtGz();
         if (null == sybXtGz){
-            loadSyb();
+            loadSystem();
         }else {
-            view.setSybXt(sybXtGz.get(PreferencesUtil.SYB_NAME),sybXtGz.get(PreferencesUtil.XT_NAME));
-            view.setGz(sybXtGz.get(PreferencesUtil.GZ_NAME_3), sybXtGz.get(PreferencesUtil.GZ_NAME_4));
+            //获取已保存的工站代码信息
+            gzxx3 = preferencesUtil.getSybXtGz().get(PreferencesUtil.GZ_Code_3);
+            gzxx4 = preferencesUtil.getSybXtGz().get(PreferencesUtil.GZ_Code_4);
+            view.onGpioGzmsChange(gzms3,gzms4);
+            view.setSybXt(sybXtGz.get(PreferencesUtil.SYB_NAME),sybXtGz.get(PreferencesUtil.XT_CODE)+" "+sybXtGz.get(PreferencesUtil.XT_NAME));
+            view.setGz(sybXtGz.get(PreferencesUtil.GZ_NAME_3),sybXtGz.get(PreferencesUtil.GZ_NAME_4));
         }
+
         gpioUtil3 = new GpioUtil(GPIO_INDEX_3, this);
         gpioUtil4 = new GpioUtil(GPIO_INDEX_4,this);
-        timer.schedule(new TimerTask() {
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                //轨道一
+                if ("".equals(gzxx3)||"".equals(gzxx4)){
+                    LogWraper.d(TAG,"无工站信息");
+                    return;
+                }
                 LogWraper.d(TAG,"到五秒了，开始发送");
+                LogWraper.d(TAG,"一轨工作模式："+gzms3);
+                LogWraper.d(TAG,"二轨工作模式："+gzms4);
+                //轨道一
                 switch (gzms3){
                     //系统控制
                     case Config.GZMS_SYSTEM_CONTROL:
@@ -118,8 +139,6 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                                     }
                                 }
                             }
-
-
                         }
                         break;
                     //手工放行
@@ -127,7 +146,6 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                         LogWraper.d(TAG,"一轨发送一次信号");
                         gpioUtil3.sendOne();
                         startSend(GPIO_INDEX_3);
-
                         break;
                     //暂停运行
                     case Config.GZMS_ZTYX:
@@ -174,6 +192,12 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                     default:
                         break;
                 }
+
+            }
+        },0,SEND_GPIO_TIME, TimeUnit.MILLISECONDS);
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
                 RetrofitManager.getDate().subscribe(new Observer<DateBean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -184,35 +208,45 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                         if (context.isDestroyed()){
                             return;
                         }
-                       if (isFirstTime) {
+                        if (isFirstTime) {
                             isFirstTime = false;
-                           String time = value.getUcData().get(0)
-                                   .getV_curdate().replaceAll("-", "")
-                                   .replaceAll(" ", "\\.")
-                                   .replaceAll(":", "");
-                           LogWraper.d(TAG,"初始化APP，设置系统时间"+time);
-                           Util.setSystemTime(context,time);
-                           final SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd E");
-                           dateTimer.schedule(new TimerTask() {
-                               @Override
-                               public void run() {
-                                   final String date = format.format(new Date());
-                                   context.runOnUiThread(new Runnable() {
-                                       @Override
-                                       public void run() {
-                                           view.onDateUpdate(date);
-                                       }
-                                   });
-                               }
-                           },0,12*60*60*1000);
-
-                       }
+                            String time = value.getUcData().get(0).getV_curdate();
+                            String[] split = time.split("T");
+                            String date1 = split[0].replaceAll("-", "");
+                            String[] date2 = split[1].split(":");
+                            int hourInt = Integer.parseInt(date2[0]);
+                            if (hourInt>12){
+                                date2[0] = ""+(hourInt-12);
+                            }else {
+                                date2[0] = ""+hourInt;
+                            }
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < date2.length; i++) {
+                                sb.append(date2[i]);
+                            }
+                            String resultTime = date1 +"."+ sb.toString();
+                            LogWraper.d(TAG,"初始化APP，设置系统时间"+resultTime);
+                            //设置时间需要转换成12小时制
+                            Util.setSystemTime(context,resultTime);
+                            final SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd E");
+                            scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
+                                @Override
+                                public void run() {
+                                    final String date = format.format(new Date());
+                                    context.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            view.onDateUpdate(date);
+                                        }
+                                    });
+                                }
+                            },0,12*60*60*1000,TimeUnit.MILLISECONDS);
+                        }
                         LogWraper.d(TAG,"检测与服务器的连接");
                         //每次有返回值表示与服务器有连接
                         isConnect = true;
                         view.onNetInfoChange(Config.IS_STOP_1);
                     }
-
                     @Override
                     public void onError(Throwable e) {
                         //e.printStackTrace();
@@ -220,36 +254,29 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                         isConnect = false;
                         view.onNetInfoChange(Config.IS_STOP_0);
                         MainActivityPresenter.this.value = null;
-                        context.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                view.onStopSend(GPIO_INDEX_3);
-                                view.onStopSend(GPIO_INDEX_4);
-                            }
-                        });
                     }
                     @Override
                     public void onComplete() {
                     }
                 });
             }
-        },0,SEND_GPIO_TIME);
-        //此定时器每隔
-        timer2.schedule(new TimerTask() {
+        },0,SEND_GPIO_TIME,TimeUnit.MILLISECONDS);
+        //此定时器每隔10s，请求一次工站信息
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                if (!isConnect){
+                //如果没有网络连接|没有设置工站|没有设置系统|线体直接返回
+                Map<String, String> sybXtGz1 = preferencesUtil.getSybXtGz();
+                if (!isConnect || "".equals(gzxx3)||"".equals(gzxx4)||null == sybXtGz1){
                     return;
                 }
-                Map<String, String> sybXtGz1 = preferencesUtil.getSybXtGz();
-
                 RetrofitManager.getInfoBean(sybXtGz1.get(PreferencesUtil.SYB_SERVER),
                         sybXtGz1.get(PreferencesUtil.SYB_DATABASE),
                         sybXtGz1.get(PreferencesUtil.SYB_UID),
                         sybXtGz1.get(PreferencesUtil.SYB_PWD),
                         sybXtGz1.get(PreferencesUtil.XT_CODE),
                         sybXtGz1.get(PreferencesUtil.GZ_Code_3)+","+ sybXtGz1.get(PreferencesUtil.GZ_Code_4)
-                        ).subscribe(new Observer<InfoBean>() {
+                ).subscribe(new Observer<InfoBean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
@@ -259,17 +286,20 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                         if (context.isDestroyed()){
                             return;
                         }
-                        LogWraper.d(TAG,"开始请求下一次发送命令");
+                        LogWraper.d(TAG,"请求服务器信息");
                         //每次有返回值表示与服务器有连接
                         MainActivityPresenter.this.value = value;
-                        isConnect = true;
-                        view.onNetInfoChange(Config.IS_STOP_1);
+                        //一轨的信息
                         InfoBean.UcDataBean info3 = null;
+                        //二轨的信息
                         InfoBean.UcDataBean info4 = null;
+                        //这里做处理是为了让工站对齐，（返回的工站代码和轨道设置的工站可能会不在同一位置）
                         for (InfoBean.UcDataBean bean:value.getUcData()){
+                            //找到一轨的工站代码
                             if (gzxx3.equals(bean.getErl_gzdm())){
                                 info3 = bean;
                             }
+                            //找到二轨的工站代码
                             if (gzxx4.equals(bean.getErl_gzdm())){
                                 info4 = bean;
                             }
@@ -279,27 +309,30 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
                     @Override
                     public void onError(Throwable e) {
-                        //e.printStackTrace();
-                        //请求网络出错
-                        isConnect = false;
-                        view.onNetInfoChange(Config.IS_STOP_0);
                         MainActivityPresenter.this.value = null;
-                        context.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                view.onStopSend(GPIO_INDEX_3);
-                                view.onStopSend(GPIO_INDEX_4);
-                            }
-                        });
+                        view.onLoadInfoSucceed(null,null);
+                        //view.onShowMsgDialog("加载服务器指令出错");
                     }
                     @Override
                     public void onComplete() {
                     }
                 });
             }
-        },0,REQUEST_STOP_ORDER_TIME);
+        },0,REQUEST_STOP_ORDER_TIME, TimeUnit.MILLISECONDS);
+
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                checkUpdate();
+            }
+        },0,CHECK_UPDATE_TIME,TimeUnit.MILLISECONDS);
+
     }
 
+    /**
+     * 开始发送gpio信号，（改变UI显示）
+     * @param gpioIndex
+     */
     private void startSend(final String gpioIndex) {
         context.runOnUiThread(new Runnable() {
             @Override
@@ -308,7 +341,10 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
             }
         });
     }
-
+    /**
+     * 结束发送gpio信号，（改变UI显示）
+     * @param gpioIndex
+     */
     private void stopSend(final String gpioIndex) {
         context.runOnUiThread(new Runnable() {
             @Override
@@ -319,6 +355,10 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
     }
 
+    /**
+     * 检查更新
+     *
+     */
     @Override
     public void checkUpdate() {
         RetrofitManager.getUpdateInfo().subscribe(new Observer<UpdateBean>() {
@@ -329,12 +369,15 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
             @Override
             public void onNext(UpdateBean value) {
-                LogWraper.d(TAG,"version"+value.getVersion());
-                LogWraper.d(TAG,"url"+value.getUrl());
-                if (haveNewVersion(value.getVersion())){
-                    view.onCheckUpdateSucceed(true,value.getUrl());
+                UpdateBean.UcDataBean bean = value.getUcData().get(0);
+                if ("Y".equals(bean.getV_UpFlag())) {
+                    if (haveNewVersion(bean.getV_SrvVer())) {
+                        view.onCheckUpdateSucceed(true, bean.getV_UpAddr());
+                    } else {
+                        view.onCheckUpdateSucceed(false, bean.getV_UpAddr());
+                    }
                 }else {
-                    view.onCheckUpdateSucceed(false,null);
+                    view.onCheckUpdateSucceed(false, null);
                 }
             }
 
@@ -351,6 +394,10 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
     }
 
+    /**
+     * 正在更新
+     * @param url
+     */
     @Override
     public void update(String url) {
         DownloadUtils downloadUtils = new DownloadUtils(context);
@@ -369,15 +416,20 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
             public void onError(Throwable e) {
                 e.printStackTrace();
                 view.onShowMsgDialog("下载失败");
+                view.onUpdateSucceed();
             }
 
             @Override
             public void onComplete() {
-                view.onLoad(false);
+                view.onUpdateSucceed();
             }
         });
     }
 
+    /**
+     * 加载线体
+     * @param syb
+     */
     @Override
     public void loadXt(SystemBean.UcDataBean syb) {
         RetrofitManager.getXbBean(syb.getPrj_server(),syb.getPrj_database(),syb.getPrj_uid(),syb.getPrj_pwd())
@@ -391,15 +443,19 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                     }
                     @Override
                     public void onError(Throwable e) {
+
                     }
                     @Override
                     public void onComplete() {
-
+                        //view.onLoad(false);
                     }
                 });
 
     }
 
+    /**
+     * 加载工站
+     */
     @Override
     public void loadGz() {
         Map<String, String> sybXtGz = preferencesUtil.getSybXtGz();
@@ -427,8 +483,11 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
     }
 
+    /**
+     * 加载系统
+     */
     @Override
-    public void loadSyb() {
+    public void loadSystem() {
         RetrofitManager.getSystemName().subscribe(new Observer<SystemBean>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -437,48 +496,61 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
             @Override
             public void onNext(SystemBean value) {
-                view.onLoadSybSecceed(value);
+                view.onLoadSystemSecceed(value);
             }
 
             @Override
             public void onError(Throwable e) {
-
             }
 
             @Override
             public void onComplete() {
-
             }
         });
 
     }
 
+    /**
+     * 改变工作模式
+     * @param road1GzmsStr
+     * @param road2GzmsStr
+     */
     @Override
     public void changeGzms(String road1GzmsStr, String road2GzmsStr) {
-            this.gzms3 = road1GzmsStr;
-            preferencesUtil.setGZMS3(road1GzmsStr);
-            this.gzms4 = road2GzmsStr;
-            preferencesUtil.setGZMS4(road2GzmsStr);
-            view.onGpioGzmsChange(road1GzmsStr,road2GzmsStr);
+        //上面的代码，每次发送信号都要根据工作模式判断
+        this.gzms3 = road1GzmsStr;
+        preferencesUtil.setGZMS3(road1GzmsStr);
+        this.gzms4 = road2GzmsStr;
+        preferencesUtil.setGZMS4(road2GzmsStr);
+        //改变UI
+        view.onGpioGzmsChange(road1GzmsStr,road2GzmsStr);
     }
-
-    @Override
-    public void detroy() {
-        timer.cancel();
-        timer2.cancel();
-        dateTimer.cancel();
-    }
-
+    /**
+     * 改变工站信息
+     * @param road1GzxxStr
+     * @param road2GzxxStr
+     */
     @Override
     public void changeGzxx(String road1GzxxStr, String road2GzxxStr) {
         gzxx3 = road1GzxxStr;
         gzxx4 = road2GzxxStr;
     }
 
+    /**
+     * 退出系统，销毁资源
+     */
     @Override
-    public void onGpioStatuChange(String index, String statu) {
-
+    public void detroy() {
+        scheduledThreadPoolExecutor.shutdown();
     }
+
+    /**
+     * goio状态监听器，暂时不用
+     * @param index
+     * @param statu
+     */
+    @Override
+    public void onGpioStatuChange(String index, String statu) {}
     /**
      * 是否有新版本
      * @param newVersion

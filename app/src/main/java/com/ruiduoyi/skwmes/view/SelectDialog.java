@@ -20,6 +20,7 @@ import com.ruiduoyi.skwmes.util.PreferencesUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -51,6 +52,7 @@ public class SelectDialog extends AlertDialog {
     private SystemBean.UcDataBean sybBean = null;
     private SelectListener selectListener;
     private PreferencesUtil preferencesUtil;
+    Map<String, String> sybXtGz;
     public void setSelectListener(SelectListener selectListener) {
         this.selectListener = selectListener;
     }
@@ -62,6 +64,7 @@ public class SelectDialog extends AlertDialog {
     public SelectDialog(@NonNull Context context, int themeResId) {
         super(context, themeResId);
         preferencesUtil = new PreferencesUtil(context);
+        sybXtGz = preferencesUtil.getSybXtGz();
         this.context = context;
         if (context instanceof Activity) {
             setOwnerActivity((Activity) context);
@@ -106,22 +109,7 @@ public class SelectDialog extends AlertDialog {
     }
 
 
-    /**
-     * 设置线体
-     *
-     * @param xtData
-     */
-    public void setXtData(List<XbBean.UcDataBean> xtData) {
-        this.xtData = xtData;
-        List<String> data = new ArrayList<>();
-        for (XbBean.UcDataBean bean: xtData){
-            data.add(bean.getV_xbdm()+" "+bean.getV_xbname());
-        }
-        xtAdapter = new ArrayAdapter<String>(context, R.layout.item_select_dialog, data);
-        spXt.setAdapter(xtAdapter);
-        spXt.setSelection(0);
-        xtAdapter.notifyDataSetChanged();
-    }
+
 
 
 
@@ -165,16 +153,53 @@ public class SelectDialog extends AlertDialog {
         dismiss();
     }
 
+    /**
+     * 设置线体
+     *
+     * @param xtData
+     */
+    public void setXtData(List<XbBean.UcDataBean> xtData) {
+        this.xtData = xtData;
+        List<String> data = new ArrayList<>();
+        int index = 0;
+        int i=0;
+        String xtCode = "";
+        if (null != sybXtGz) {
+            xtCode = sybXtGz.get(PreferencesUtil.XT_CODE);
+        }
+        for (XbBean.UcDataBean bean: xtData){
+            data.add(bean.getV_xbdm()+" "+bean.getV_xbname());
+            if (bean.getV_xbdm().equals(xtCode)){
+                index = i;
+            }
+            i++;
+        }
+        xtAdapter = new ArrayAdapter<String>(context, R.layout.item_select_dialog, data);
+        spXt.setAdapter(xtAdapter);
+        spXt.setSelection(index,true);
+        //xtAdapter.notifyDataSetChanged();
+    }
+
     public void setSyb(List<SystemBean.UcDataBean> sybData) {
         this.sybData = sybData;
         List<String> data = new ArrayList<>();
+        int index = 0;
+        int i=0;
+        String systemName = "";
+        if (null != sybXtGz) {
+            systemName = sybXtGz.get(PreferencesUtil.SYB_NAME);
+        }
         for (SystemBean.UcDataBean bean: sybData){
             data.add(bean.getPrj_name());
+            if (bean.getPrj_name().equals(systemName)){
+                index = i;
+            }
+            i++;
         }
         sybAdapter = new ArrayAdapter<String>(context, R.layout.item_select_dialog, data);
         spSyb.setAdapter(sybAdapter);
-        spSyb.setSelection(0);
-        sybAdapter.notifyDataSetChanged();
+        //sybAdapter.notifyDataSetChanged();
+        spSyb.setSelection(index,true);
     }
 
     public interface SelectListener {

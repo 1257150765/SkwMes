@@ -37,7 +37,7 @@ public class DownloadUtils {
                 if (!file.exists()){
                     file.mkdir();
                 }
-                url = new URL(url_str+fileName);
+                url = new URL(url_str);
                 HttpURLConnection urlConnection=(HttpURLConnection) url.openConnection();
                 urlConnection.setDoInput(true);
                 urlConnection.setUseCaches(false);
@@ -55,14 +55,15 @@ public class DownloadUtils {
                     downloadSize++;
                     if (downloadSize%100==0){
                         int progress=(int) (downloadSize/fileSize*100);
-                        if (progress<=100)
-                        e.onNext(progress);
+                        if (progress<100)
+                            e.onNext(progress);
                         Log.e("download",downloadSize/fileSize+"");
                     }
                     out.write(buff, 0, size);
                 }
-                installAPK(filePath+"/"+fileName);
                 e.onComplete();
+                installAPK(filePath+"/"+fileName);
+
             }
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }

@@ -39,7 +39,7 @@ import static com.ruiduoyi.skwmes.presenter.MainActivityPresenter.REQUEST_CODE_C
 public class MainActivity extends AppCompatActivity implements MainActivityContact.View, DialogInterface.OnDismissListener, SelectDialog.SelectListener, RoadSettingDialog.RoadSettingListener {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CODE_ROAD_SETTING = 1003;
-
+    private boolean isAutoUpdate = true;
     @BindView(R.id.tv_title_mainavtivity)
     TextView tvTitle;
     @BindView(R.id.tv_date_mainavtivity)
@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     private RoadSettingDialog roadSettingDialog;
     private String gzStr1;
     private String gzStr2;
+    //private AlertDialog loadingDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
             public void onDoubleClick() {
                 presenter.checkUpdate();
                 LogWraper.d(TAG, "onDoubleClick");
+                isAutoUpdate = false;
             }
         }));
 
@@ -139,19 +141,24 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         downloadProgressDialog.setTitle("下载中");
         downloadProgressDialog.setMax(100);
         downloadProgressDialog.setOnDismissListener(this);
+        /*View v = LayoutInflater.from(this).inflate(R.layout.dialog_loading,null,false);
+        loadingDialog = new AlertDialog.Builder(this)
+                .setView(v)
+                .create();
+        */
     }
 
     /**
-     * 成功加载事业部
+     * 成功加载系统名称
      *
-     * @param sybData
+     * @param systmData
      */
     @Override
-    public void onLoadSybSecceed(SystemBean sybData) {
+    public void onLoadSystemSecceed(SystemBean systmData) {
         selectDialog = new SelectDialog(MainActivity.this);
         selectDialog.setOnDismissListener(this);
         selectDialog.setSelectListener(this);
-        selectDialog.setSyb(sybData.getUcData());
+        selectDialog.setSyb(systmData.getUcData());
         selectDialog.show();
     }
 
@@ -160,7 +167,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     public void onShowMsgDialog(String msg) {
         if (!MainActivity.this.isDestroyed()) {
             dialog.setMessage(msg);
-            dialog.show();
+            if (!dialog.isShowing()){
+                dialog.show();
+            }
+
         }
     }
 
@@ -175,8 +185,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         if (progress >= 0 && progress < 100) {
             downloadProgressDialog.setProgress(progress);
             downloadProgressDialog.show();
-        } else if (progress >= 100) {
-            downloadProgressDialog.dismiss();
         }
     }
 
@@ -188,35 +196,43 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
      */
     @Override
     public void onCheckUpdateSucceed(boolean hasUpdate, final String url) {
+
         if (hasUpdate) {
             downloadDialog = new AlertDialog.Builder(MainActivity.this)
                     .setTitle("提示")
-                    .setMessage("发现新的版本，是否现在下载更新")
+                    .setMessage("发现新的版本，点击确定开始更新")
                     .setCancelable(false)
-                    .setNegativeButton("确定", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             presenter.update(url);
                         }
-                    }).setPositiveButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
                     }).create();
-
-
         } else {
+            //如果是自动检查更新，没有新版本就不提示更新
+            if (isAutoUpdate){
+                return;
+            }
+            //重置状态
+            isAutoUpdate = true;
             downloadDialog = new AlertDialog.Builder(MainActivity.this)
                     .setTitle("提示")
-                    .setMessage("没有新版本")
-                    .setCancelable(false)
-                    .setNegativeButton("确定", new DialogInterface.OnClickListener() {
+                    .setMessage("是否更新")
+                    .setCancelable(true)
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            presenter.update(url);
+                            dialog.dismiss();
+                        }
+                    })
+                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
-                    }).create();
+                    })
+                    .create();
         }
         if (!MainActivity.this.isDestroyed()) {
             downloadDialog.setOnDismissListener(this);
@@ -229,6 +245,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     public void onNetInfoChange(String netInfo) {
         if (Config.IS_STOP_0.equals(netInfo)) {
             isConnect = false;
+            tvErrorinfo1.setTextColor(Color.RED);
+            tvErrorinfo1.setText("网络异常，请检查网络！");
+            tvErrorinfo2.setTextColor(Color.RED);
+            tvErrorinfo2.setText("网络异常，请检查网络！");
             ivNetstatu.setImageResource(R.mipmap.netstatu_disconnect);
         } else {
             isConnect = true;
@@ -238,7 +258,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
 
     @Override
     public void onLoad(boolean isLoad) {
-
+       /* if (isLoad){
+            loadingDialog.show();
+        }else {
+            loadingDialog.dismiss();
+        }*/
     }
 
     @Override
@@ -328,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         }
         if (requestCode == REQUEST_CODE_CHANGSYBXTGZ) {
             if (resultCode == RESULT_OK) {
-                presenter.loadSyb();
+                presenter.loadSystem();
             }
         }
     }
@@ -364,9 +388,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     //显示工站
     @Override
     public void setGz(String gzStr1, String gzStr2) {
+        if ("".equals(gzStr1)||"".equals(gzStr2)){
+            return;
+        }
         this.gzStr1 = gzStr1;
         this.gzStr2 = gzStr2;
+        tvRoad1Gz.setTextColor(Color.BLACK);
         tvRoad1Gz.setText(gzStr1);
+        tvRoad2Gz.setTextColor(Color.BLACK);
         tvRoad2Gz.setText(gzStr2);
     }
     //成功加载线体
@@ -388,16 +417,33 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
 
     @Override
     public void onLoadInfoSucceed(InfoBean.UcDataBean info3, InfoBean.UcDataBean info4) {
-        if (null != info3){
+        if (null == info3){
+            tvErrorinfo1.setTextColor(Color.RED);
+            tvErrorinfo1.setText("加载服务器指令出错");
+        }else {
             int color = getBackColor(info3.getErl_color());
             tvErrorinfo1.setTextColor(color);
             tvErrorinfo1.setText(info3.getErl_allycms());
         }
-        if (null != info4){
+
+        if (null == info4){
+            tvErrorinfo2.setTextColor(Color.RED);
+            tvErrorinfo2.setText("加载服务器指令出错");
+        }else {
             int color = getBackColor(info4.getErl_color());
             tvErrorinfo2.setTextColor(color);
             tvErrorinfo2.setText(info4.getErl_allycms());
         }
+    }
+
+    @Override
+    public void onUpdateSucceed() {
+        if (downloadProgressDialog != null) {
+            if (downloadProgressDialog.isShowing()) {
+                downloadProgressDialog.dismiss();
+            }
+        }
+
     }
 
     private int getBackColor(String erl_color) {
@@ -427,7 +473,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        presenter.detroy();
     }
 
     //隐藏虚拟按键，并且全屏
@@ -453,7 +498,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     @Override
     public void onRoadSetting(String road1GzmsStr, String road2GzmsStr, GzBean.UcDataBean road1Bean, GzBean.UcDataBean road2Bean) {
         presenter.changeGzms(road1GzmsStr, road2GzmsStr);
-        presenter.changeGzxx(road1Bean.getV_gzdm(),road2Bean.getV_gzdm());
-        setGz(road1Bean.getV_gzname(),road2Bean.getV_gzname());
+        if (road1Bean == null || road2Bean == null){
+        }else {
+            presenter.changeGzxx(road1Bean.getV_gzdm(), road2Bean.getV_gzdm());
+            setGz(road1Bean.getV_gzname(),road2Bean.getV_gzname());
+        }
     }
 }
