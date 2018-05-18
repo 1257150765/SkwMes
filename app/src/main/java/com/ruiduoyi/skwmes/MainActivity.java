@@ -443,9 +443,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
                 downloadProgressDialog.dismiss();
             }
         }
-
     }
-
     private int getBackColor(String erl_color) {
         int color = 0;
         switch (erl_color){
@@ -499,6 +497,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
     public void onRoadSetting(String road1GzmsStr, String road2GzmsStr, GzBean.UcDataBean road1Bean, GzBean.UcDataBean road2Bean) {
         presenter.changeGzms(road1GzmsStr, road2GzmsStr);
         if (road1Bean == null || road2Bean == null){
+
         }else {
             presenter.changeGzxx(road1Bean.getV_gzdm(), road2Bean.getV_gzdm());
             setGz(road1Bean.getV_gzname(),road2Bean.getV_gzname());

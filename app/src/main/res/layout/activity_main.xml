@@ -144,7 +144,7 @@
                 android:layout_height="wrap_content" />
             <TextView
                 android:textSize="13sp"
-                android:text="Copyright©2017 All rights reserved"
+                android:text="Copyright©2018 All rights reserved"
                 android:textColor="@color/gray"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

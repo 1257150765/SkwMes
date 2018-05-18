@@ -7,6 +7,9 @@ import com.glongtech.gpio.GpioEvent;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Created by Chen on 2018/4/17.
@@ -15,12 +18,12 @@ import java.util.TimerTask;
 public class GpioUtil{
     private static final String TAG = GpioUtil.class.getSimpleName();
     private String gpioIndex;
-    private long time = 100;
+    private long time = 2000;
     private OnGpioChangeListener onGpioChangeListener;
     private String gpioType;
     public static final String GPIO_TYPE_HIGHT = "1";
     public static final String GPIO_TYPE_LOW= "0";
-
+    private ExecutorService executor = Executors.newFixedThreadPool(4);
 
     public GpioUtil(String gpioIndex, final OnGpioChangeListener onGpioChangeListener) {
         setGpioIndex(gpioIndex);
@@ -50,14 +53,20 @@ public class GpioUtil{
      * 开始
      */
     public void sendOne(){
-        Gpio.SetGpioOutputHigh(gpioIndex);
-        try {
-            //短时间内不能设置多次输出
-            Thread.sleep(time);
-            Gpio.SetGpioOutputLow(gpioIndex);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Gpio.SetGpioOutputHigh(gpioIndex);
+                try {
+                    //短时间内不能设置多次输出
+                    Thread.sleep(time);
+                    Gpio.SetGpioOutputLow(gpioIndex);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
     }
 
 

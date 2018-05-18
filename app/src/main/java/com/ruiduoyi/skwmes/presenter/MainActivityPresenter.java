@@ -570,16 +570,19 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
         //LogWraper.d(TAG, "haveNewVersion: oldVersion"+oldVersion);
         String[] oldVersionArr = oldVersion.split("\\.");
         String[] newVersionArr = newVersion.split("\\.");
-
+        try {
         //Log.d(TAG, "haveNewVersion: length"+oldVersionArr.length);
-        for (int i=0;i<oldVersionArr.length; i++){
-            if((Integer.parseInt(newVersionArr[i])) > (Integer.parseInt(oldVersionArr[i]))){
-                isHaveNewVersion = true;
-            }else if ((Integer.parseInt(newVersionArr[i])) == (Integer.parseInt(oldVersionArr[i]))){
-                continue;
-            }else{
-                break;
+            for (int i=0;i<oldVersionArr.length; i++){
+                if((Integer.parseInt(newVersionArr[i])) > (Integer.parseInt(oldVersionArr[i]))){
+                    isHaveNewVersion = true;
+                }else if ((Integer.parseInt(newVersionArr[i])) == (Integer.parseInt(oldVersionArr[i]))){
+                    continue;
+                }else{
+                    break;
+                }
             }
+        }catch (Exception e){
+            return false;
         }
         return isHaveNewVersion;
     }
