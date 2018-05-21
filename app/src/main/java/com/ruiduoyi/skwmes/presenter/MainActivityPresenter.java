@@ -58,6 +58,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     /*Timer timer = new Timer();
     Timer timer2 = new Timer();
     Timer dateTimer = new Timer();*/
+    //如果scheduledThreadPoolExecutor 的任务的run方法有错误发生，会取消该任务，（其他任务不受影响）并且不会报错
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
     private boolean isConnect = false;
 
@@ -109,221 +110,248 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                if ("".equals(gzxx3)||"".equals(gzxx4)){
-                    LogWraper.d(TAG,"无工站信息");
-                    return;
-                }
-                LogWraper.d(TAG,"到五秒了，开始发送");
-                LogWraper.d(TAG,"一轨工作模式："+gzms3);
-                LogWraper.d(TAG,"二轨工作模式："+gzms4);
-                //轨道一
-                switch (gzms3){
-                    //系统控制
-                    case Config.GZMS_SYSTEM_CONTROL:
-                        if (null == value){
+                //这里的try防止出错异常退出
+                try {
+                    if ("".equals(gzxx3)||"".equals(gzxx4)){
+                        LogWraper.d(TAG,"无工站信息");
+                        return;
+                    }
+                    LogWraper.d(TAG,"到五秒了，开始发送");
+                    LogWraper.d(TAG,"一轨工作模式："+gzms3);
+                    LogWraper.d(TAG,"二轨工作模式："+gzms4);
+                    //轨道一
+                    switch (gzms3){
+                        //系统控制
+                        case Config.GZMS_SYSTEM_CONTROL:
+                            if (null == value){
+                                stopSend(GPIO_INDEX_3);
+                                LogWraper.d(TAG,"没有接收到服务器命令");
+                            }else {
+                                for (InfoBean.UcDataBean bean:value.getUcData()){
+                                    //循环找到对应的工站
+                                    if (gzxx3.equals(bean.getErl_gzdm())){
+                                        LogWraper.d(TAG,"接收到服务器命令,一轨指令--"+bean.isErl_signal());
+                                        if (bean.isErl_signal()) {
+                                            gpioUtil3.sendOne();
+                                            startSend(GPIO_INDEX_3);
+                                            LogWraper.d(TAG,"一轨发送一次信号");
+                                        } else if (!bean.isErl_signal()||!isConnect) {
+                                            //stopSend(GPIO_INDEX_3);
+                                            //当接收到暂停命令时，不做处理即可，
+                                            stopSend(GPIO_INDEX_3);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        //手工放行
+                        case Config.GZMS_SGFX:
+                            LogWraper.d(TAG,"一轨发送一次信号");
+                            gpioUtil3.sendOne();
+                            startSend(GPIO_INDEX_3);
+                            break;
+                        //暂停运行
+                        case Config.GZMS_ZTYX:
                             stopSend(GPIO_INDEX_3);
-                            LogWraper.d(TAG,"没有接收到服务器命令");
-                        }else {
-                            for (InfoBean.UcDataBean bean:value.getUcData()){
-                                //循环找到对应的工站
-                                if (gzxx3.equals(bean.getErl_gzdm())){
-                                    LogWraper.d(TAG,"接收到服务器命令,一轨指令--"+bean.isErl_signal());
-                                    if (bean.isErl_signal()) {
-                                        gpioUtil3.sendOne();
-                                        startSend(GPIO_INDEX_3);
-                                        LogWraper.d(TAG,"一轨发送一次信号");
-                                    } else if (!bean.isErl_signal()||!isConnect) {
-                                        //stopSend(GPIO_INDEX_3);
-                                        //当接收到暂停命令时，不做处理即可，
-                                        stopSend(GPIO_INDEX_3);
+                            break;
+                        default:
+                            break;
+                    }
+                    switch (gzms4){
+                        //系统控制
+                        case Config.GZMS_SYSTEM_CONTROL:
+                            if (null == value){
+                                LogWraper.d(TAG,"没有接收到服务器命令");
+                                stopSend(GPIO_INDEX_4);
+                            }else {
+                                //轨道二
+                                for (InfoBean.UcDataBean bean:value.getUcData()){
+                                    //循环找到对应的工站
+                                    if (gzxx4.equals(bean.getErl_gzdm())){
+                                        LogWraper.d(TAG,"接收到服务器命令,二轨指令--"+bean.isErl_signal());
+                                        if (bean.isErl_signal()) {
+                                            gpioUtil4.sendOne();
+                                            startSend(GPIO_INDEX_4);
+                                            LogWraper.d(TAG,"二轨发送一次信号");
+                                        } else if (!bean.isErl_signal()||!isConnect) {
+                                            //stopSend(GPIO_INDEX_3);
+                                            //当接收到暂停命令时，不做处理即可，
+                                            stopSend(GPIO_INDEX_4);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        break;
-                    //手工放行
-                    case Config.GZMS_SGFX:
-                        LogWraper.d(TAG,"一轨发送一次信号");
-                        gpioUtil3.sendOne();
-                        startSend(GPIO_INDEX_3);
-                        break;
-                    //暂停运行
-                    case Config.GZMS_ZTYX:
-                        stopSend(GPIO_INDEX_3);
-                        break;
-                    default:
-                        break;
-                }
-                switch (gzms4){
-                    //系统控制
-                    case Config.GZMS_SYSTEM_CONTROL:
-                        if (null == value){
-                            LogWraper.d(TAG,"没有接收到服务器命令");
+                            break;
+                        //手工放行
+                        case Config.GZMS_SGFX:
+                            LogWraper.d(TAG,"二轨发送一次信号");
+                            gpioUtil4.sendOne();
+                            startSend(GPIO_INDEX_4);
+                            break;
+                        //暂停运行
+                        case Config.GZMS_ZTYX:
                             stopSend(GPIO_INDEX_4);
-                        }else {
-                            //轨道二
-                            for (InfoBean.UcDataBean bean:value.getUcData()){
-                                //循环找到对应的工站
-                                if (gzxx4.equals(bean.getErl_gzdm())){
-                                    LogWraper.d(TAG,"接收到服务器命令,二轨指令--"+bean.isErl_signal());
-                                    if (bean.isErl_signal()) {
-                                        gpioUtil4.sendOne();
-                                        startSend(GPIO_INDEX_4);
-                                        LogWraper.d(TAG,"二轨发送一次信号");
-                                    } else if (!bean.isErl_signal()||!isConnect) {
-                                        //stopSend(GPIO_INDEX_3);
-                                        //当接收到暂停命令时，不做处理即可，
-                                        stopSend(GPIO_INDEX_4);
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    //手工放行
-                    case Config.GZMS_SGFX:
-                        LogWraper.d(TAG,"二轨发送一次信号");
-                        gpioUtil4.sendOne();
-                        startSend(GPIO_INDEX_4);
-                        break;
-                    //暂停运行
-                    case Config.GZMS_ZTYX:
-                        stopSend(GPIO_INDEX_4);
-                        break;
-                    default:
-                        break;
+                            break;
+                        default:
+                            break;
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-
             }
+
         },0,SEND_GPIO_TIME, TimeUnit.MILLISECONDS);
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                RetrofitManager.getDate().subscribe(new Observer<DateBean>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
+                //这里的try防止出错异常退出
+                try {
+                    RetrofitManager.getDate().subscribe(new Observer<DateBean>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
 
-                    }
-                    @Override
-                    public void onNext(final DateBean value) {
-                        if (context.isDestroyed()){
-                            return;
                         }
-                        if (isFirstTime) {
-                            isFirstTime = false;
-                            String time = value.getUcData().get(0).getV_curdate();
-                            String[] split = time.split("T");
-                            String date1 = split[0].replaceAll("-", "");
-                            String[] date2 = split[1].split(":");
-                            int hourInt = Integer.parseInt(date2[0]);
-                            if (hourInt>12){
-                                date2[0] = ""+(hourInt-12);
-                            }else {
-                                date2[0] = ""+hourInt;
+
+                        @Override
+                        public void onNext(final DateBean value) {
+                            if (context.isDestroyed()) {
+                                return;
                             }
-                            StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < date2.length; i++) {
-                                sb.append(date2[i]);
-                            }
-                            String resultTime = date1 +"."+ sb.toString();
-                            LogWraper.d(TAG,"初始化APP，设置系统时间"+resultTime);
-                            //设置时间需要转换成12小时制
-                            Util.setSystemTime(context,resultTime);
-                            final SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd E");
-                            scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
-                                @Override
-                                public void run() {
-                                    final String date = format.format(new Date());
-                                    context.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            view.onDateUpdate(date);
-                                        }
-                                    });
+                            if (isFirstTime) {
+                                isFirstTime = false;
+                                String time = value.getUcData().get(0).getV_curdate();
+                                String[] split = time.split("T");
+                                String date1 = split[0].replaceAll("-", "");
+                                String[] date2 = split[1].split(":");
+                                int hourInt = Integer.parseInt(date2[0]);
+                                if (hourInt > 12) {
+                                    date2[0] = "" + (hourInt - 12);
+                                } else {
+                                    date2[0] = "" + hourInt;
                                 }
-                            },0,12*60*60*1000,TimeUnit.MILLISECONDS);
+                                StringBuilder sb = new StringBuilder();
+                                for (int i = 0; i < date2.length; i++) {
+                                    sb.append(date2[i]);
+                                }
+                                String resultTime = date1 + "." + sb.toString();
+                                LogWraper.d(TAG, "初始化APP，设置系统时间" + resultTime);
+                                //设置时间需要转换成12小时制
+                                Util.setSystemTime(context, resultTime);
+                                final SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd E");
+                                scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            final String date = format.format(new Date());
+                                            context.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    view.onDateUpdate(date);
+                                                }
+                                            });
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }, 0, 1 * 60 * 60 * 1000, TimeUnit.MILLISECONDS);
+                            }
+                            LogWraper.d(TAG, "检测与服务器的连接");
+                            //每次有返回值表示与服务器有连接
+                            isConnect = true;
+                            view.onNetInfoChange(Config.IS_STOP_1);
                         }
-                        LogWraper.d(TAG,"检测与服务器的连接");
-                        //每次有返回值表示与服务器有连接
-                        isConnect = true;
-                        view.onNetInfoChange(Config.IS_STOP_1);
-                    }
-                    @Override
-                    public void onError(Throwable e) {
-                        //e.printStackTrace();
-                        //请求网络出错
-                        isConnect = false;
-                        view.onNetInfoChange(Config.IS_STOP_0);
-                        MainActivityPresenter.this.value = null;
-                    }
-                    @Override
-                    public void onComplete() {
-                    }
-                });
+
+                        @Override
+                        public void onError(Throwable e) {
+                            //e.printStackTrace();
+                            //请求网络出错
+                            isConnect = false;
+                            view.onNetInfoChange(Config.IS_STOP_0);
+                            MainActivityPresenter.this.value = null;
+                        }
+
+                        @Override
+                        public void onComplete() {
+                        }
+                    });
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         },0,SEND_GPIO_TIME,TimeUnit.MILLISECONDS);
         //此定时器每隔10s，请求一次工站信息
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                //如果没有网络连接|没有设置工站|没有设置系统|线体直接返回
-                Map<String, String> sybXtGz1 = preferencesUtil.getSybXtGz();
-                if (!isConnect || "".equals(gzxx3)||"".equals(gzxx4)||null == sybXtGz1){
-                    return;
+                try {
+                    //如果没有网络连接|没有设置工站|没有设置系统|线体直接返回
+                    Map<String, String> sybXtGz1 = preferencesUtil.getSybXtGz();
+                    if (!isConnect || "".equals(gzxx3)||"".equals(gzxx4)||null == sybXtGz1){
+                        return;
+                    }
+                    RetrofitManager.getInfoBean(sybXtGz1.get(PreferencesUtil.SYB_SERVER),
+                            sybXtGz1.get(PreferencesUtil.SYB_DATABASE),
+                            sybXtGz1.get(PreferencesUtil.SYB_UID),
+                            sybXtGz1.get(PreferencesUtil.SYB_PWD),
+                            sybXtGz1.get(PreferencesUtil.XT_CODE),
+                            sybXtGz1.get(PreferencesUtil.GZ_Code_3)+","+ sybXtGz1.get(PreferencesUtil.GZ_Code_4)
+                    ).subscribe(new Observer<InfoBean>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+
+                        }
+                        @Override
+                        public void onNext(final InfoBean value) {
+                            if (context.isDestroyed()){
+                                return;
+                            }
+                            LogWraper.d(TAG,"请求服务器信息");
+                            //每次有返回值表示与服务器有连接
+                            MainActivityPresenter.this.value = value;
+                            //一轨的信息
+                            InfoBean.UcDataBean info3 = null;
+                            //二轨的信息
+                            InfoBean.UcDataBean info4 = null;
+                            //这里做处理是为了让工站对齐，（返回的工站代码和轨道设置的工站可能会不在同一位置）
+                            for (InfoBean.UcDataBean bean:value.getUcData()){
+                                //找到一轨的工站代码
+                                if (gzxx3.equals(bean.getErl_gzdm())){
+                                    info3 = bean;
+                                }
+                                //找到二轨的工站代码
+                                if (gzxx4.equals(bean.getErl_gzdm())){
+                                    info4 = bean;
+                                }
+                            }
+                            view.onLoadInfoSucceed(info3,info4);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            MainActivityPresenter.this.value = null;
+                            view.onLoadInfoSucceed(null,null);
+                            //view.onShowMsgDialog("加载服务器指令出错");
+                        }
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-                RetrofitManager.getInfoBean(sybXtGz1.get(PreferencesUtil.SYB_SERVER),
-                        sybXtGz1.get(PreferencesUtil.SYB_DATABASE),
-                        sybXtGz1.get(PreferencesUtil.SYB_UID),
-                        sybXtGz1.get(PreferencesUtil.SYB_PWD),
-                        sybXtGz1.get(PreferencesUtil.XT_CODE),
-                        sybXtGz1.get(PreferencesUtil.GZ_Code_3)+","+ sybXtGz1.get(PreferencesUtil.GZ_Code_4)
-                ).subscribe(new Observer<InfoBean>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-                    @Override
-                    public void onNext(final InfoBean value) {
-                        if (context.isDestroyed()){
-                            return;
-                        }
-                        LogWraper.d(TAG,"请求服务器信息");
-                        //每次有返回值表示与服务器有连接
-                        MainActivityPresenter.this.value = value;
-                        //一轨的信息
-                        InfoBean.UcDataBean info3 = null;
-                        //二轨的信息
-                        InfoBean.UcDataBean info4 = null;
-                        //这里做处理是为了让工站对齐，（返回的工站代码和轨道设置的工站可能会不在同一位置）
-                        for (InfoBean.UcDataBean bean:value.getUcData()){
-                            //找到一轨的工站代码
-                            if (gzxx3.equals(bean.getErl_gzdm())){
-                                info3 = bean;
-                            }
-                            //找到二轨的工站代码
-                            if (gzxx4.equals(bean.getErl_gzdm())){
-                                info4 = bean;
-                            }
-                        }
-                        view.onLoadInfoSucceed(info3,info4);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        MainActivityPresenter.this.value = null;
-                        view.onLoadInfoSucceed(null,null);
-                        //view.onShowMsgDialog("加载服务器指令出错");
-                    }
-                    @Override
-                    public void onComplete() {
-                    }
-                });
             }
         },0,REQUEST_STOP_ORDER_TIME, TimeUnit.MILLISECONDS);
 
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                checkUpdate();
+                try {
+                    checkUpdate();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
             }
         },0,CHECK_UPDATE_TIME,TimeUnit.MILLISECONDS);
 

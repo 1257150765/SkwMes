@@ -10,9 +10,11 @@ public class Config {
     public static final String IS_STOP_1 = "1";
     public static final String IS_STOP_0 = "0";
     public static final long REQUEST_TIME = 5000L;
-
+    //初始密码
     public static final String PWD = "123456";
     public static final String GZMS_SYSTEM_CONTROL = "系统监控";
     public static final String GZMS_SGFX = "手工放行";
     public static final String GZMS_ZTYX = "暂停运行";
+    //一次gpio信号，高低电平的间隔时间
+    public static final long TIME = 100L;
 }

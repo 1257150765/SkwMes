@@ -4,6 +4,7 @@ import android.os.Gpio;
 import android.util.Log;
 
 import com.glongtech.gpio.GpioEvent;
+import com.ruiduoyi.skwmes.Config;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,12 +19,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class GpioUtil{
     private static final String TAG = GpioUtil.class.getSimpleName();
     private String gpioIndex;
-    private long time = 2000;
+    private long time = Config.TIME;
     private OnGpioChangeListener onGpioChangeListener;
-    private String gpioType;
     public static final String GPIO_TYPE_HIGHT = "1";
     public static final String GPIO_TYPE_LOW= "0";
-    private ExecutorService executor = Executors.newFixedThreadPool(4);
+    //此线程池用来发送gpio信号，因为发送一次信号需要（高电平->低电平），
+    // 如果相隔时间（time）太长，会导致出错（隐患），
+    //如果在另外一个线程做发送信号的操作，一方面1轨和2轨基本会同步发送
+    //另一方面，不会导致每5s的线程池溢出（在MainActivityPresentor的隐患）
+
+    private static ExecutorService executor = Executors.newFixedThreadPool(4);
 
     public GpioUtil(String gpioIndex, final OnGpioChangeListener onGpioChangeListener) {
         setGpioIndex(gpioIndex);

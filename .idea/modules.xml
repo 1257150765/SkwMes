@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/Gpiolibrary/Gpiolibrary.iml" filepath="$PROJECT_DIR$/Gpiolibrary/Gpiolibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/SkwMes.iml" filepath="$PROJECT_DIR$/SkwMes.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/loadViewLibrary/loadViewLibrary.iml" filepath="$PROJECT_DIR$/loadViewLibrary/loadViewLibrary.iml" />
     </modules>
   </component>
 </project>
