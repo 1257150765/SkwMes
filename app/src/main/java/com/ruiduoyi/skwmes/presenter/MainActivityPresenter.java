@@ -68,8 +68,10 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     private String gzxx4 = "";
     private PreferencesUtil preferencesUtil;
     private boolean isFirstTime = true;
-    private InfoBean value;
-
+    //一轨的信息
+    InfoBean.UcDataBean info3 = null;
+    //二轨的信息
+    InfoBean.UcDataBean info4 = null;
 
     public MainActivityPresenter(MainActivityContact.View view, Activity context) {
         this.view = view;
@@ -123,25 +125,23 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                     switch (gzms3){
                         //系统控制
                         case Config.GZMS_SYSTEM_CONTROL:
-                            if (null == value){
+                            if (null == info3){
                                 stopSend(GPIO_INDEX_3);
                                 LogWraper.d(TAG,"没有接收到服务器命令");
                             }else {
-                                for (InfoBean.UcDataBean bean:value.getUcData()){
-                                    //循环找到对应的工站
-                                    if (gzxx3.equals(bean.getErl_gzdm())){
-                                        LogWraper.d(TAG,"接收到服务器命令,一轨指令--"+bean.isErl_signal());
-                                        if (bean.isErl_signal()) {
-                                            gpioUtil3.sendOne();
-                                            startSend(GPIO_INDEX_3);
-                                            LogWraper.d(TAG,"一轨发送一次信号");
-                                        } else if (!bean.isErl_signal()||!isConnect) {
-                                            //stopSend(GPIO_INDEX_3);
-                                            //当接收到暂停命令时，不做处理即可，
-                                            stopSend(GPIO_INDEX_3);
-                                        }
+                                if (gzxx3.equals(info3.getErl_gzdm())){
+                                    LogWraper.d(TAG,"接收到服务器命令,一轨指令--"+info3.isErl_signal());
+                                    if (info3.isErl_signal()) {
+                                        gpioUtil3.sendOne();
+                                        startSend(GPIO_INDEX_3);
+                                        LogWraper.d(TAG,"一轨发送一次信号");
+                                    } else if (!info3.isErl_signal()||!isConnect) {
+                                        //stopSend(GPIO_INDEX_3);
+                                        //当接收到暂停命令时，不做处理即可，
+                                        stopSend(GPIO_INDEX_3);
                                     }
                                 }
+
                             }
                             break;
                         //手工放行
@@ -160,26 +160,24 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                     switch (gzms4){
                         //系统控制
                         case Config.GZMS_SYSTEM_CONTROL:
-                            if (null == value){
+                            if (null == info4){
                                 LogWraper.d(TAG,"没有接收到服务器命令");
                                 stopSend(GPIO_INDEX_4);
                             }else {
                                 //轨道二
-                                for (InfoBean.UcDataBean bean:value.getUcData()){
-                                    //循环找到对应的工站
-                                    if (gzxx4.equals(bean.getErl_gzdm())){
-                                        LogWraper.d(TAG,"接收到服务器命令,二轨指令--"+bean.isErl_signal());
-                                        if (bean.isErl_signal()) {
-                                            gpioUtil4.sendOne();
-                                            startSend(GPIO_INDEX_4);
-                                            LogWraper.d(TAG,"二轨发送一次信号");
-                                        } else if (!bean.isErl_signal()||!isConnect) {
-                                            //stopSend(GPIO_INDEX_3);
-                                            //当接收到暂停命令时，不做处理即可，
-                                            stopSend(GPIO_INDEX_4);
-                                        }
+                                if (gzxx4.equals(info4.getErl_gzdm())){
+                                    LogWraper.d(TAG,"接收到服务器命令,二轨指令--"+info4.isErl_signal());
+                                    if (info4.isErl_signal()) {
+                                        gpioUtil4.sendOne();
+                                        startSend(GPIO_INDEX_4);
+                                        LogWraper.d(TAG,"二轨发送一次信号");
+                                    } else if (!info4.isErl_signal()||!isConnect) {
+                                        //stopSend(GPIO_INDEX_3);
+                                        //当接收到暂停命令时，不做处理即可，
+                                        stopSend(GPIO_INDEX_4);
                                     }
                                 }
+
                             }
                             break;
                         //手工放行
@@ -253,7 +251,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                                             e.printStackTrace();
                                         }
                                     }
-                                }, 0, 1 * 60 * 60 * 1000, TimeUnit.MILLISECONDS);
+                                }, 0, 60 * 1000, TimeUnit.MILLISECONDS);
                             }
                             LogWraper.d(TAG, "检测与服务器的连接");
                             //每次有返回值表示与服务器有连接
@@ -267,7 +265,9 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                             //请求网络出错
                             isConnect = false;
                             view.onNetInfoChange(Config.IS_STOP_0);
-                            MainActivityPresenter.this.value = null;
+
+                            info3 = null;
+                            info4 = null;
                         }
 
                         @Override
@@ -286,7 +286,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                 try {
                     //如果没有网络连接|没有设置工站|没有设置系统|线体直接返回
                     Map<String, String> sybXtGz1 = preferencesUtil.getSybXtGz();
-                    if (!isConnect || "".equals(gzxx3)||"".equals(gzxx4)||null == sybXtGz1){
+                    if (!isConnect ||null == sybXtGz1|| "".equals(gzxx3)||"".equals(gzxx4)){
                         return;
                     }
                     RetrofitManager.getInfoBean(sybXtGz1.get(PreferencesUtil.SYB_SERVER),
@@ -307,11 +307,6 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                             }
                             LogWraper.d(TAG,"请求服务器信息");
                             //每次有返回值表示与服务器有连接
-                            MainActivityPresenter.this.value = value;
-                            //一轨的信息
-                            InfoBean.UcDataBean info3 = null;
-                            //二轨的信息
-                            InfoBean.UcDataBean info4 = null;
                             //这里做处理是为了让工站对齐，（返回的工站代码和轨道设置的工站可能会不在同一位置）
                             for (InfoBean.UcDataBean bean:value.getUcData()){
                                 //找到一轨的工站代码
@@ -328,7 +323,8 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
                         @Override
                         public void onError(Throwable e) {
-                            MainActivityPresenter.this.value = null;
+                            info3 = null;
+                            info4 = null;
                             view.onLoadInfoSucceed(null,null);
                             //view.onShowMsgDialog("加载服务器指令出错");
                         }

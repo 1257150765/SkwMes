@@ -3,18 +3,15 @@ package com.ruiduoyi.skwmes.net;
 import com.ruiduoyi.skwmes.bean.DateBean;
 import com.ruiduoyi.skwmes.bean.GzBean;
 import com.ruiduoyi.skwmes.bean.InfoBean;
-import com.ruiduoyi.skwmes.bean.StopOrder;
 import com.ruiduoyi.skwmes.bean.SystemBean;
 import com.ruiduoyi.skwmes.bean.UpdateBean;
 import com.ruiduoyi.skwmes.bean.XbBean;
 import com.ruiduoyi.skwmes.util.LogWraper;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -57,21 +54,12 @@ public class RetrofitManager {
                 .client(okHttpClient)
                 .addConverterFactory(MyGsonConverterFactory.create())//自定义数据解析
                 .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())//新的配置
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .baseUrl(BASE_URL)
                 .build();
     }
 
-    /**
-     *获取指令状态(当网络发生错误时，这个函数不会返回任何东西)
-     * @return StopOrder
-     *
-     */
-    public static Observable<StopOrder> getStopOrder(){
-         return retrofit.create(Api.class).getStopOrder()
-                 .subscribeOn(Schedulers.io())
-                 .observeOn(AndroidSchedulers.mainThread());
-    }
+
     public static Observable<UpdateBean> getUpdateInfo(){
         return retrofit.create(Api.class).getUpdateInfo()
                 .subscribeOn(Schedulers.io())
@@ -103,8 +91,6 @@ public class RetrofitManager {
                 .observeOn(AndroidSchedulers.mainThread());
     }
     interface Api{
-        @GET("GetStopOrder")
-        Observable<StopOrder> getStopOrder();
         @GET("GetSrvVersion")
         Observable<UpdateBean> getUpdateInfo();
         @GET("GetPrjList")

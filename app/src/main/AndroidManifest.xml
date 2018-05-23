@@ -35,7 +35,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-        <activity android:name=".ChangeGpioActivity"
+        <activity android:name=".view.ChangeGpioActivity"
             android:theme="@style/Theme.DialogActivity"/>
         <service android:name=".util.BackGroundService"/>
     </application>

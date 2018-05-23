@@ -1,4 +1,4 @@
-package com.ruiduoyi.skwmes;
+package com.ruiduoyi.skwmes.view;
 
 import android.content.Intent;
 import android.os.Build;
@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.ruiduoyi.skwmes.Config;
+import com.ruiduoyi.skwmes.R;
 import com.ruiduoyi.skwmes.presenter.MainActivityPresenter;
 import com.ruiduoyi.skwmes.util.PreferencesUtil;
 

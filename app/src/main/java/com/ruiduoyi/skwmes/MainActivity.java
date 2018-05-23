@@ -22,6 +22,7 @@ import com.ruiduoyi.skwmes.presenter.MainActivityPresenter;
 import com.ruiduoyi.skwmes.util.LogWraper;
 import com.ruiduoyi.skwmes.util.OnDoubleClickListener;
 import com.ruiduoyi.skwmes.util.PreferencesUtil;
+import com.ruiduoyi.skwmes.view.ChangeGpioActivity;
 import com.ruiduoyi.skwmes.view.ChangePwdDialog;
 import com.ruiduoyi.skwmes.view.RoadSettingDialog;
 import com.ruiduoyi.skwmes.view.SelectDialog;

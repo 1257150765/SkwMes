@@ -16,7 +16,7 @@ import java.net.URL;
 /**
  * Created by Chen on 2018/4/23.
  */
-
+@Deprecated
 public class NetUtil {
     private static final long SLEEP_TIME = 10000L;
     private static final int CONNECT_TIME_OUT = 2000;
