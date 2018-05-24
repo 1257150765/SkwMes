@@ -44,6 +44,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     private static final long TYPE_AUTO_UPDATE = 100L;
     //手动更新
     private static final long TYPE_HAND_UPDATE = 101L;
+    private static final long RETRY_TIME = 3L;
     private MainActivityContact.View view;
     private Activity context;
     public static final String GPIO_INDEX_1 = "1";
@@ -141,7 +142,6 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                                         stopSend(GPIO_INDEX_3);
                                     }
                                 }
-
                             }
                             break;
                         //手工放行
@@ -218,6 +218,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                             if (isFirstTime) {
                                 isFirstTime = false;
                                 String time = value.getUcData().get(0).getV_curdate();
+                                //设置时间需要转换成12小时制
                                 String[] split = time.split("T");
                                 String date1 = split[0].replaceAll("-", "");
                                 String[] date2 = split[1].split(":");
@@ -236,6 +237,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                                 //设置时间需要转换成12小时制
                                 Util.setSystemTime(context, resultTime);
                                 final SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd E");
+                                //每隔一分钟，更新一下系统显示的时间
                                 scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
                                     @Override
                                     public void run() {
@@ -265,7 +267,6 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                             //请求网络出错
                             isConnect = false;
                             view.onNetInfoChange(Config.IS_STOP_0);
-
                             info3 = null;
                             info4 = null;
                         }
@@ -338,7 +339,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
                 }
             }
         },0,REQUEST_STOP_ORDER_TIME, TimeUnit.MILLISECONDS);
-
+        //每隔CHECK_UPDATE_TIME毫秒，检查一次更新
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -381,11 +382,10 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
 
     /**
      * 检查更新
-     *
      */
     @Override
     public void checkUpdate() {
-        RetrofitManager.getUpdateInfo().subscribe(new Observer<UpdateBean>() {
+        RetrofitManager.getUpdateInfo().retry(RETRY_TIME).subscribe(new Observer<UpdateBean>() {
             @Override
             public void onSubscribe(Disposable d) {
 
@@ -419,7 +419,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     }
 
     /**
-     * 正在更新
+     * 更新进度
      * @param url
      */
     @Override
@@ -457,6 +457,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     @Override
     public void loadXt(SystemBean.UcDataBean syb) {
         RetrofitManager.getXbBean(syb.getPrj_server(),syb.getPrj_database(),syb.getPrj_uid(),syb.getPrj_pwd())
+                .retry(RETRY_TIME)
                 .subscribe(new Observer<XbBean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -484,6 +485,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
     public void loadGz() {
         Map<String, String> sybXtGz = preferencesUtil.getSybXtGz();
         RetrofitManager.getGzBean(sybXtGz.get(PreferencesUtil.SYB_SERVER), sybXtGz.get(PreferencesUtil.SYB_DATABASE), sybXtGz.get(PreferencesUtil.SYB_UID), sybXtGz.get(PreferencesUtil.SYB_PWD))
+                .retry(RETRY_TIME)
                 .subscribe(new Observer<GzBean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -512,7 +514,7 @@ public class MainActivityPresenter implements MainActivityContact.Presenter, Gpi
      */
     @Override
     public void loadSystem() {
-        RetrofitManager.getSystemName().subscribe(new Observer<SystemBean>() {
+        RetrofitManager.getSystemName().retry(RETRY_TIME).subscribe(new Observer<SystemBean>() {
             @Override
             public void onSubscribe(Disposable d) {
 

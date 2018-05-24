@@ -12,6 +12,7 @@ public class Config {
     public static final long REQUEST_TIME = 5000L;
     //初始密码
     public static final String PWD = "123456";
+    //工作模式
     public static final String GZMS_SYSTEM_CONTROL = "系统监控";
     public static final String GZMS_SGFX = "手工放行";
     public static final String GZMS_ZTYX = "暂停运行";

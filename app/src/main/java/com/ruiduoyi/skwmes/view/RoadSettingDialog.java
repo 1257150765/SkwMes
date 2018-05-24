@@ -118,6 +118,7 @@ public class RoadSettingDialog extends AlertDialog {
             }
         });
         spRoad2Gzms.setSelection(index4,true);
+
         //工站信息
         spGz1.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override

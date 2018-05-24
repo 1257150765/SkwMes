@@ -30,7 +30,6 @@ public interface MainActivityContact {
         void onUpdate(int progress);
         void onCheckUpdateSucceed(boolean hasUpdate, String url);
         void onNetInfoChange(String netInfo);
-        void onLoad(boolean isLoad);
         void onStartSend(String gpioIndex);
         void onStopSend(String gpioIndex);
         void setSybXt(String sybStr, String xtStr);

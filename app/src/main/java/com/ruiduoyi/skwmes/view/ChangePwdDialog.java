@@ -89,6 +89,7 @@ public class ChangePwdDialog extends AlertDialog {
             showMsg("两次输入的密码不一致");
             return;
         }
+        //验证成功，保存密码
         preferencesUtil.savePwd(newPwd);
         dismiss();
     }

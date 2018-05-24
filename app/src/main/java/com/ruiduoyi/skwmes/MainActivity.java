@@ -106,6 +106,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         presenter = new MainActivityPresenter(this, this);
     }
 
+
+
     /**
      * 初始化
      */
@@ -197,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
      */
     @Override
     public void onCheckUpdateSucceed(boolean hasUpdate, final String url) {
-
+        //当有新版本的时候，强制更新，否则按需更新
         if (hasUpdate) {
             downloadDialog = new AlertDialog.Builder(MainActivity.this)
                     .setTitle("提示")
@@ -210,8 +212,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
                         }
                     }).create();
         } else {
-            //如果是自动检查更新，没有新版本就不提示更新
-            if (isAutoUpdate){
+            //如果是自动检查更新，没有新版本就不提示更新,当后台返回不更新的时候，url为空
+            if (isAutoUpdate||null == url){
                 return;
             }
             //重置状态
@@ -240,7 +242,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
             downloadDialog.show();
         }
     }
-
     //网络状态变化
     @Override
     public void onNetInfoChange(String netInfo) {
@@ -257,14 +258,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         }
     }
 
-    @Override
-    public void onLoad(boolean isLoad) {
-       /* if (isLoad){
-            loadingDialog.show();
-        }else {
-            loadingDialog.dismiss();
-        }*/
-    }
 
     @Override
     public void onStartSend(String gpioIndex) {
@@ -468,10 +461,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityConta
         return color;
     }
 
-
+    //当界面处于交互时，全屏显示
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideBottomUIMenu();
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        presenter.detroy();
     }
 
     //隐藏虚拟按键，并且全屏

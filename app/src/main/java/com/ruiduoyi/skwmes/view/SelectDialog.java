@@ -41,8 +41,6 @@ public class SelectDialog extends AlertDialog {
     private Context context;
     @BindView(R.id.sp_xt_dialog_select)
     Spinner spXt;
-
-
     private View mRootView;
     private ArrayAdapter<String> xtAdapter;
     private ArrayAdapter<String> sybAdapter;
@@ -75,6 +73,7 @@ public class SelectDialog extends AlertDialog {
         setView(mRootView);
         //getWindow().setDimAmount(0);
         ButterKnife.bind(this, mRootView);
+        //如果系统没有保存有系统，线体等信息，说明是第一次进入，不设置只能退出系统
         if (preferencesUtil.getSybXtGz() == null){
             tvExit.setText("退出系统");
         }else {
@@ -106,15 +105,6 @@ public class SelectDialog extends AlertDialog {
             }
         });
 
-    }
-
-
-
-
-
-
-    public void show(View view) {
-        //showAtLocation(view, Gravity.CENTER,0,0);
     }
 
     @OnClick({R.id.tv_exit_dialog_select, R.id.tv_ok_dialog_select})
@@ -149,6 +139,7 @@ public class SelectDialog extends AlertDialog {
         if (selectListener != null) {
             selectListener.onSelect(sybBean,xtBean);
         }
+        //数据验证正确，保存系统名称，线体
         preferencesUtil.setSybXtGz(sybBean,xtBean,null,null);
         dismiss();
     }
@@ -179,7 +170,9 @@ public class SelectDialog extends AlertDialog {
         spXt.setSelection(index,true);
         //xtAdapter.notifyDataSetChanged();
     }
-
+    /**
+     * 设置系统名称下拉框
+     */
     public void setSyb(List<SystemBean.UcDataBean> sybData) {
         this.sybData = sybData;
         List<String> data = new ArrayList<>();
